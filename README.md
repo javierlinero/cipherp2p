@@ -6,7 +6,7 @@
   <a href="https://github.com/javierlinero/cipherp2p/">
     <img src="images/logo.png" alt="Logo" width="150" height="150">
   </a>
-  <h3 align="center">Cipher P2P</h3>
+  <h2 align="center">Cipher P2P</h3>
   <h3 align="center">file sharing &amp; file management system as a google chrome extension</h3>
 </div>
 
