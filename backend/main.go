@@ -110,10 +110,7 @@ func JoinSessionRequestHandler(w http.ResponseWriter, r *http.Request) {
 	users := Sessions.GetUsers(sessionID)
 
 	// Convert to a slice of SerializableUser (or similar structure)
-	var serializables []SerializableUser
-	for _, user := range users {
-		serializables = append(serializables, SerializableUser{user.ID, user.Host})
-	}
+	serializables := UsersToSerialized(users)
 
 	// Send the list of users back to the frontend
 	err = wss.WriteJSON(serializables)
@@ -144,25 +141,24 @@ func JoinSessionRequestHandler(w http.ResponseWriter, r *http.Request) {
 			case "candidate":
 				//handle webrtc ICE candidate
 			case "joinSession":
-				Sessions.AddUser(sessionID, false, wss)
+				allusers := Sessions.GetUsers(sessionID)
+				serialized := UsersToSerialized(allusers)
+				err = wss.WriteJSON(serialized)
+				if err != nil {
+					log.Printf("error sending user list: %v", err)
+					return
+				}
 			}
 		}
 	}()
 }
 
-func GetSessionUsersHandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Access-Control-Allow-Origin", "*")
-	sessionID := r.URL.Query().Get("sessionId")
-
-	users := Sessions.GetUsers(sessionID)
-
+func UsersToSerialized(users []User) []SerializableUser {
 	var serializables []SerializableUser
 	for _, user := range users {
 		serializables = append(serializables, SerializableUser{user.ID, user.Host})
 	}
-
-	// You might need to create a simpler structure if User contains unexportable or unnecessary fields
-	json.NewEncoder(w).Encode(serializables)
+	return serializables
 }
 
 type SignalMessage struct {
@@ -174,7 +170,6 @@ func main() {
 	Sessions.Initialize()
 	port := os.Getenv("PORT")
 	http.HandleFunc("/create-room", CreateSessionRequestHandler)
-	http.HandleFunc("/get-session-users", GetSessionUsersHandler)
 	http.HandleFunc("/join-room", JoinSessionRequestHandler)
 	log.Println("Starting server on port:" + port)
 	err := http.ListenAndServe(":"+port, nil)
