@@ -1,0 +1,68 @@
+body {
+    font-family: 'Arial', sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f4f4;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    color: #333;
+}
+
+#container {
+    width: 80%;
+    max-width: 500px;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+h1 {
+    color: #5a5a5a;
+}
+
+.input-group {
+    margin: 20px 0;
+}
+
+input[type="file"] {
+    border: 1px solid #ddd;
+    padding: 10px;
+    width: 70%;
+    margin-right: 10px;
+}
+
+button {
+    background-color: #4CAF50; /* You can remove this line if you want to use CSS from styles.css */
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+button:hover {
+    background-color: #45a049; /* You can remove this line if you want to use CSS from styles.css */
+}
+
+/* Add the button styles from styles.css */
+
+.popup-bold-btn {
+    font-size: 20px !important;
+    background-color: #0D96D3 !important;
+    border-color: #0D96D3 !important;
+}
+
+.popup-bold-btn:hover {
+    background-color: rgba(13, 152, 211, 0.80) !important;
+    border-color: rgba(13, 152, 211, 0.80) !important;
+}
+
+#status {
+    margin-top: 20px;
+    color: #666;
+}
