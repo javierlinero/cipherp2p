@@ -62,7 +62,7 @@ func (s *SessionMap) MakeSession() string {
 }
 
 func (s *SessionMap) AddUser(sessionId string, host bool, conn *websocket.Conn) {
-	userID := "el loco numero1"
+	userID := uuid.New().String()[:8]
 	s.Mutex.Lock()
 	defer s.Mutex.Unlock()
 	log.Println("inserting new user into session: ", sessionId)
