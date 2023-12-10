@@ -148,6 +148,13 @@ func JoinSessionRequestHandler(w http.ResponseWriter, r *http.Request) {
 				}
 			case "leaveSession":
 				Sessions.removeUserFromSession(msg.SessionID, wss)
+				allusers := Sessions.GetUsers(msg.SessionID)
+				serialized := UsersToSerialized(allusers)
+				err = wss.WriteJSON(serialized)
+				if err != nil {
+					log.Printf("error sending user list: %v", err)
+					return
+				}
 			}
 		}
 	}()

@@ -25,7 +25,7 @@ function establishWebSocketConnection(sessionID) {
     }
 
     websocket.onclose = function() {
-        websocket.send(JSON.stringify({ Type: 'joinSession', SessionID: sessionID }));
+        websocket.send(JSON.stringify({ Type: 'leaveSession', SessionID: sessionID }));
     }
 
     // here we'll add other event listeners, so when someones websocket closes, we can see how many users are in a session, and if none then we can
@@ -34,9 +34,15 @@ function establishWebSocketConnection(sessionID) {
 
 function updateUsersTable(data) {
     const usersTable = document.getElementById('usersTable');
-    while (usersTable.rows.length > 1) {
-        usersTable.deleteRow(1);
-    }
+    // Clear the entire table
+    usersTable.innerHTML = '';
+
+    // Create and add the header row
+    let headerRow = usersTable.insertRow();
+    let headerCell = headerRow.insertCell();
+    headerCell.textContent = 'User ID';
+    headerCell.style.fontWeight = 'bold'; // Optional, for styling the header
+
     data.forEach(user => {
         let row = usersTable.insertRow();
         let cell = row.insertCell();
