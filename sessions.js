@@ -7,8 +7,6 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('sessionIdDisplay').textContent = sessionID;
 
     establishWebSocketConnection(sessionID);
-
-    fetchAndUpdateUsers(sessionID);
 });
 
 
@@ -19,9 +17,28 @@ function establishWebSocketConnection(sessionID) {
         // websocket.send(JSON.stringify({ Type: 'joinSession', SessionID: sessionID }));
     }
 
+    websocket.onmessage = function(event) {
+        const data = JSON.parse(event.data);
+        if (Array.isArray(data)) {
+            updateUsersTable(data);
+        }
+    }
+
     // here we'll add other event listeners, so when someones websocket closes, we can see how many users are in a session, and if none then we can
     // delete the session
 }
+
+function updateUsersTable(data) {
+    const usersTable = document.getElementById('usersTable');
+    usersTable.innerHTML = '';
+
+    data.forEach(user => {
+        let row = usersTable.insertRow();
+        let cell = row.insertCell();
+        cell.textContent = user.ID;
+    });
+}
+
 
 function fetchAndUpdateUsers(sessionID) {
     fetch(`https://damp-brushlands-64193-d1cbfc7ae5d4.herokuapp.com/get-session-users?sessionId=${sessionID}`)

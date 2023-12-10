@@ -106,9 +106,21 @@ func JoinSessionRequestHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	Sessions.AddUser(sessionID, false, wss)
-	msg := []byte(Sessions.Map[sessionID][0].ID)
 
-	wss.WriteMessage(websocket.TextMessage, msg)
+	users := Sessions.GetUsers(sessionID)
+
+	// Convert to a slice of SerializableUser (or similar structure)
+	var serializables []SerializableUser
+	for _, user := range users {
+		serializables = append(serializables, SerializableUser{user.ID, user.Host})
+	}
+
+	// Send the list of users back to the frontend
+	err = wss.WriteJSON(serializables)
+	if err != nil {
+		log.Printf("error sending user list: %v", err)
+		return
+	}
 
 	go func() {
 		defer wss.Close()
