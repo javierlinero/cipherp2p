@@ -3,7 +3,9 @@
     "name": "P2P File Sharing Extension",
     "version": "1.0",
     "description": "A Chrome extension for peer-to-peer file sharing.",
-    "permissions": ["storage", "activeTab"],
+    "permissions": ["storage",
+                    "activeTab",
+                    "https://funny-cats-open.loca.lt/*"],
     "background": {
       "service_worker": "background.js"
     },

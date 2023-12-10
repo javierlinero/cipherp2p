@@ -5,6 +5,7 @@ import (
 	"log"
 	"math/rand"
 	"net/http"
+	"os"
 	"sync"
 	"time"
 
@@ -87,15 +88,43 @@ func JoinSessionRequestHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	Sessions.AddUser(sessionID, false, wss)
 
+	go func() {
+		for {
+			var msg SignalMessage
+			err := wss.ReadJSON(&msg)
+			if err != nil {
+				log.Println("reading/retrieving error: ", err)
+				break
+			}
+			handleSignalMessage(msg, sessionID)
+		}
+	}()
+}
+
+func handleSignalMessage(msg SignalMessage, sessionID string) {
+	for _, user := range Sessions.GetUsers(sessionID) {
+		if user.Conn != nil {
+			err := user.Conn.WriteJSON(msg)
+			if err != nil {
+				log.Println("writing/sending error: ", err)
+			}
+		}
+	}
+}
+
+type SignalMessage struct {
+	Type string          // offer, answer, candidate
+	Data json.RawMessage // Raw JSON message content
+	To   string          // Session ID of the recipient
 }
 
 func main() {
 	Sessions.Initialize()
-
+	port := os.Getenv("PORT")
 	http.HandleFunc("/create-room", CreateSessionRequestHandler)
 	http.HandleFunc("/join-room", JoinSessionRequestHandler)
-	log.Println("Starting server on port 8080")
-	err := http.ListenAndServe(":8080", nil)
+	log.Println("Starting server on port:" + port)
+	err := http.ListenAndServe(":"+port, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
