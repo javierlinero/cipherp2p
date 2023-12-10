@@ -9,10 +9,12 @@ import (
 	"sync"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
 )
 
 type User struct {
+	ID   string
 	Host bool
 	Conn *websocket.Conn
 }
@@ -20,6 +22,10 @@ type User struct {
 type SessionMap struct {
 	Mutex sync.RWMutex
 	Map   map[string][]User
+}
+
+func generateUniqueID() string {
+	return uuid.New().String()
 }
 
 func (s *SessionMap) Initialize() {
@@ -51,10 +57,11 @@ func (s *SessionMap) MakeSession() string {
 }
 
 func (s *SessionMap) AddUser(sessionId string, host bool, conn *websocket.Conn) {
+	userID := generateUniqueID()
 	s.Mutex.Lock()
 	defer s.Mutex.Unlock()
 	log.Println("inserting new user into session: ", sessionId)
-	s.Map[sessionId] = append(s.Map[sessionId], User{host, conn})
+	s.Map[sessionId] = append(s.Map[sessionId], User{userID, host, conn})
 }
 
 func (s *SessionMap) DeleteSession(sessionId string) {
@@ -90,18 +97,35 @@ func JoinSessionRequestHandler(w http.ResponseWriter, r *http.Request) {
 	wss, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Fatalf("error upgrading connection: %v", err)
+		return
 	}
+
 	Sessions.AddUser(sessionID, false, wss)
 
 	go func() {
+		defer wss.Close()
 		for {
 			var msg SignalMessage
 			err := wss.ReadJSON(&msg)
 			if err != nil {
-				log.Println("reading/retrieving error: ", err)
+				if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
+					log.Printf("WebSocket error: %v", err)
+				} else {
+					log.Println("WebSocket closed")
+				}
 				break
 			}
-			handleSignalMessage(msg, sessionID)
+
+			switch msg.Type {
+			case "offer":
+				//handle webrtc offer
+			case "answer":
+				//handle webrtc answer
+			case "candidate":
+				//handle webrtc ICE candidate
+			case "joinSession":
+				Sessions.AddUser(sessionID, false, wss)
+			}
 		}
 	}()
 }
@@ -116,21 +140,9 @@ func GetSessionUsersHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(users)
 }
 
-func handleSignalMessage(msg SignalMessage, sessionID string) {
-	for _, user := range Sessions.GetUsers(sessionID) {
-		if user.Conn != nil {
-			err := user.Conn.WriteJSON(msg)
-			if err != nil {
-				log.Println("writing/sending error: ", err)
-			}
-		}
-	}
-}
-
 type SignalMessage struct {
-	Type string          // offer, answer, candidate
-	Data json.RawMessage // Raw JSON message content
-	To   string          // Session ID of the recipient
+	Type      string // offer, answer, candidate
+	SessionID string // sessionID
 }
 
 func main() {
