@@ -19,6 +19,11 @@ type User struct {
 	Conn *websocket.Conn
 }
 
+type SerializableUser struct {
+	ID   string
+	Host bool
+}
+
 type SessionMap struct {
 	Mutex sync.RWMutex
 	Map   map[string][]User
@@ -136,8 +141,13 @@ func GetSessionUsersHandler(w http.ResponseWriter, r *http.Request) {
 
 	users := Sessions.GetUsers(sessionID)
 
+	var serializables []SerializableUser
+	for _, user := range users {
+		serializables = append(serializables, SerializableUser{user.ID, user.Host})
+	}
+
 	// You might need to create a simpler structure if User contains unexportable or unnecessary fields
-	json.NewEncoder(w).Encode(users)
+	json.NewEncoder(w).Encode(serializables)
 }
 
 type SignalMessage struct {
