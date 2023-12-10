@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
 function establishWebSocketConnection(sessionID) {
-    const websocket = new WebSocket('wss://damp-brushlands-64193-d1cbfc7ae5d4.herokuapp.com/join-room');
+    const websocket = new WebSocket(`wss://damp-brushlands-64193-d1cbfc7ae5d4.herokuapp.com/join-room?sessionID=${sessionID}`);
 
     websocket.onopen = function() {
         websocket.send(JSON.stringify({ Type: 'joinSession', SessionID: sessionID }));
