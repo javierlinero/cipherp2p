@@ -107,17 +107,17 @@ func JoinSessionRequestHandler(w http.ResponseWriter, r *http.Request) {
 
 	Sessions.AddUser(sessionID, false, wss)
 
-	users := Sessions.GetUsers(sessionID)
+	// users := Sessions.GetUsers(sessionID)
 
-	// Convert to a slice of SerializableUser (or similar structure)
-	serializables := UsersToSerialized(users)
+	// // Convert to a slice of SerializableUser (or similar structure)
+	// serializables := UsersToSerialized(users)
 
-	// Send the list of users back to the frontend
-	err = wss.WriteJSON(serializables)
-	if err != nil {
-		log.Printf("error sending user list: %v", err)
-		return
-	}
+	// // Send the list of users back to the frontend
+	// err = wss.WriteJSON(serializables)
+	// if err != nil {
+	// 	log.Printf("error sending user list: %v", err)
+	// 	return
+	// }
 
 	go func() {
 		defer wss.Close()
