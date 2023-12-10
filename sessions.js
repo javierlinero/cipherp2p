@@ -30,7 +30,6 @@ function establishWebSocketConnection(sessionID) {
 
 function updateUsersTable(data) {
     const usersTable = document.getElementById('usersTable');
-    usersTable.innerHTML = '';
 
     data.forEach(user => {
         let row = usersTable.insertRow();
@@ -39,26 +38,3 @@ function updateUsersTable(data) {
     });
 }
 
-
-function fetchAndUpdateUsers(sessionID) {
-    fetch(`https://damp-brushlands-64193-d1cbfc7ae5d4.herokuapp.com/get-session-users?sessionId=${sessionID}`)
-    .then(response => response.json()) // Converts the response to JSON
-    .then(users => {
-        console.log(users); // Log the response to see what's being returned
-
-        // Check if 'users' is null or empty
-        if (!users || users.length === 0) {
-            console.log("No users found or null response");
-            return;
-        }
-
-        // Now 'users' should be the array from the JSON response
-        const usersTable = document.getElementById('usersTable');
-        users.forEach(user => {
-            let row = usersTable.insertRow();
-            let cell = row.insertCell();
-            cell.textContent = user.ID; // Assuming user.ID is what you want to display
-        });
-    })
-    .catch(error => console.error('Error:', error));
-}
