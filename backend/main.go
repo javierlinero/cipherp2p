@@ -39,7 +39,12 @@ func (s *SessionMap) MakeSession() string {
 
 	rand.New(rand.NewSource(time.Now().UnixNano()))
 	var SessionLetters = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890")
-	sessionId := string(SessionLetters[rand.Intn(len(SessionLetters))])
+
+	lenSess := make([]rune, 8)
+	for i := 0; i < 8; i++ {
+		lenSess[i] = SessionLetters[rand.Intn(len(SessionLetters))]
+	}
+	sessionId := string(lenSess)
 
 	s.Map[sessionId] = make([]User, 0)
 	return sessionId
