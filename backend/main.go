@@ -120,7 +120,10 @@ func JoinSessionRequestHandler(w http.ResponseWriter, r *http.Request) {
 	// }
 
 	go func() {
-		defer wss.Close()
+		defer func() {
+			Sessions.removeUserFromSession(sessionID, wss)
+			wss.Close()
+		}()
 		for {
 			var msg SignalMessage
 			err := wss.ReadJSON(&msg)
@@ -159,6 +162,25 @@ func UsersToSerialized(users []User) []SerializableUser {
 		serializables = append(serializables, SerializableUser{user.ID, user.Host})
 	}
 	return serializables
+}
+
+func (s *SessionMap) removeUserFromSession(sessionID string, conn *websocket.Conn) {
+	s.Mutex.Lock()
+	defer s.Mutex.Unlock()
+	users, exists := s.Map[sessionID]
+	if !exists {
+		// Session does not exist
+		return
+	}
+
+	for i, user := range users {
+		if user.Conn == conn {
+			// Remove the user from the slice
+			s.Map[sessionID] = append(users[:i], users[i+1:]...)
+			return
+		}
+	}
+	// User not found in the session
 }
 
 type SignalMessage struct {
