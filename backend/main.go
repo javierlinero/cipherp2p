@@ -106,6 +106,9 @@ func JoinSessionRequestHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	Sessions.AddUser(sessionID, false, wss)
+	msg := []byte(Sessions.Map[sessionID][0].ID)
+
+	wss.WriteMessage(websocket.TextMessage, msg)
 
 	go func() {
 		defer wss.Close()
