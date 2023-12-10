@@ -4,8 +4,10 @@
     "version": "1.0",
     "description": "A Chrome extension for peer-to-peer file sharing.",
     "permissions": ["storage",
-                    "activeTab",
-                    "https://funny-cats-open.loca.lt/*"],
+                    "activeTab"],
+    "host_permissions": [
+      "https://damp-brushlands-64193-d1cbfc7ae5d4.herokuapp.com/*"
+    ],
     "background": {
       "service_worker": "background.js"
     },

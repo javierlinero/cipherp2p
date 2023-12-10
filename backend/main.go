@@ -106,6 +106,16 @@ func JoinSessionRequestHandler(w http.ResponseWriter, r *http.Request) {
 	}()
 }
 
+func GetSessionUsersHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	sessionID := r.URL.Query().Get("sessionId")
+
+	users := Sessions.GetUsers(sessionID)
+
+	// You might need to create a simpler structure if User contains unexportable or unnecessary fields
+	json.NewEncoder(w).Encode(users)
+}
+
 func handleSignalMessage(msg SignalMessage, sessionID string) {
 	for _, user := range Sessions.GetUsers(sessionID) {
 		if user.Conn != nil {
@@ -127,6 +137,7 @@ func main() {
 	Sessions.Initialize()
 	port := os.Getenv("PORT")
 	http.HandleFunc("/create-room", CreateSessionRequestHandler)
+	http.HandleFunc("/get-session-users", GetSessionUsersHandler)
 	http.HandleFunc("/join-room", JoinSessionRequestHandler)
 	log.Println("Starting server on port:" + port)
 	err := http.ListenAndServe(":"+port, nil)
