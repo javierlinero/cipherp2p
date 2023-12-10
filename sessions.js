@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
 function establishWebSocketConnection(sessionID) {
-    const websocket = new WebSocket(`wss://damp-brushlands-64193-d1cbfc7ae5d4.herokuapp.com/join-room?sessionID=${sessionID}`);
+    const websocket = new WebSocket(`wss://damp-brushlands-64193-d1cbfc7ae5d4.herokuapp.com/join-room`);
 
     websocket.onopen = function() {
         websocket.send(JSON.stringify({ Type: 'joinSession', SessionID: sessionID }));
@@ -24,13 +24,19 @@ function establishWebSocketConnection(sessionID) {
         }
     }
 
+    websocket.onclose = function() {
+        websocket.send(JSON.stringify({ Type: 'joinSession', SessionID: sessionID }));
+    }
+
     // here we'll add other event listeners, so when someones websocket closes, we can see how many users are in a session, and if none then we can
     // delete the session
 }
 
 function updateUsersTable(data) {
     const usersTable = document.getElementById('usersTable');
-
+    while (usersTable.rows.length > 1) {
+        usersTable.deleteRow(1);
+    }
     data.forEach(user => {
         let row = usersTable.insertRow();
         let cell = row.insertCell();

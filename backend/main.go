@@ -97,15 +97,11 @@ var upgrader = websocket.Upgrader{
 }
 
 func JoinSessionRequestHandler(w http.ResponseWriter, r *http.Request) {
-	sessionID := r.URL.Query().Get("sessionId")
-
 	wss, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Fatalf("error upgrading connection: %v", err)
 		return
 	}
-
-	Sessions.AddUser(sessionID, false, wss)
 
 	// users := Sessions.GetUsers(sessionID)
 
@@ -120,15 +116,13 @@ func JoinSessionRequestHandler(w http.ResponseWriter, r *http.Request) {
 	// }
 
 	go func() {
-		defer func() {
-			Sessions.removeUserFromSession(sessionID, wss)
-			wss.Close()
-		}()
+		defer wss.Close()
 		for {
 			var msg SignalMessage
 			err := wss.ReadJSON(&msg)
 			if err != nil {
 				if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
+					Sessions.removeUserFromSession(sessionID, wss)
 					log.Printf("WebSocket error: %v", err)
 				} else {
 					log.Println("WebSocket closed")
@@ -144,13 +138,16 @@ func JoinSessionRequestHandler(w http.ResponseWriter, r *http.Request) {
 			case "candidate":
 				//handle webrtc ICE candidate
 			case "joinSession":
-				allusers := Sessions.GetUsers(sessionID)
+				Sessions.AddUser(msg.SessionID, false, wss)
+				allusers := Sessions.GetUsers(msg.SessionID)
 				serialized := UsersToSerialized(allusers)
 				err = wss.WriteJSON(serialized)
 				if err != nil {
 					log.Printf("error sending user list: %v", err)
 					return
 				}
+			case "leaveSession":
+				Sessions.removeUserFromSession(msg.SessionID, wss)
 			}
 		}
 	}()
