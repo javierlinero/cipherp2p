@@ -97,6 +97,8 @@ var upgrader = websocket.Upgrader{
 }
 
 func JoinSessionRequestHandler(w http.ResponseWriter, r *http.Request) {
+	sessionID := r.URL.Query().Get("sessionId")
+
 	wss, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Fatalf("error upgrading connection: %v", err)
@@ -116,7 +118,17 @@ func JoinSessionRequestHandler(w http.ResponseWriter, r *http.Request) {
 	// }
 
 	go func() {
-		defer wss.Close()
+		defer func() {
+			Sessions.removeUserFromSession(sessionID, wss)
+			allusers := Sessions.GetUsers(sessionID)
+			serialized := UsersToSerialized(allusers)
+			err = wss.WriteJSON(serialized)
+			if err != nil {
+				log.Printf("error sending user list: %v", err)
+				return
+			}
+			wss.Close()
+		}()
 		for {
 			var msg SignalMessage
 			err := wss.ReadJSON(&msg)
@@ -147,14 +159,6 @@ func JoinSessionRequestHandler(w http.ResponseWriter, r *http.Request) {
 					return
 				}
 			case "leaveSession":
-				Sessions.removeUserFromSession(msg.SessionID, wss)
-				allusers := Sessions.GetUsers(msg.SessionID)
-				serialized := UsersToSerialized(allusers)
-				err = wss.WriteJSON(serialized)
-				if err != nil {
-					log.Printf("error sending user list: %v", err)
-					return
-				}
 			}
 		}
 	}()
