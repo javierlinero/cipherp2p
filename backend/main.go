@@ -306,7 +306,7 @@ func main() {
 	log.Println("Starting server on port:" + port)
 	err := http.ListenAndServe(":"+port, nil)
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 	}
 
 }
