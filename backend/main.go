@@ -221,18 +221,8 @@ func (s *SessionMap) closeSession(sessionID string) {
 		return
 	}
 
-	// Define a simple message struct
-	closeMessage := struct {
-		Message string `json:"message"`
-	}{
-		Message: "sessionClosed",
-	}
-
 	for _, user := range users {
 		if user.Conn != nil {
-			if msg, err := json.Marshal(closeMessage); err == nil {
-				user.Conn.WriteMessage(websocket.TextMessage, msg)
-			}
 			user.Conn.Close()
 		}
 	}

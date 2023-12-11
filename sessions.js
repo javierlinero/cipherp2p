@@ -46,29 +46,15 @@ function establishWebSocketConnection(sessionID, host) {
     }
 
     websocket.onmessage = function(event) {
-        try {
-            const data = JSON.parse(event.data);
-    
-            // First, check if data is an object with a 'type' property
-            if (typeof data === 'object' && data !== null && 'type' in data) {
-                if (data.type === 'sessionClosed') {
-                    window.location.href = 'closed.html';
-                    return; // Exit the function after handling
-                }
-                // Add more conditions here for different types of messages
-            }
-            // Then check if data is an array
-            else if (Array.isArray(data)) {
-                updateUsersTable(data);
-            }
-        } catch (error) {
-            console.error("Error parsing WebSocket message:", error);
-            // Handle parsing error
+        const data = JSON.parse(event.data);
+        if (Array.isArray(data)) {
+            updateUsersTable(data);
         }
     }
 
     websocket.onclose = function() {
         console.log('Connection closed');
+        window.location.href = 'closed.html'
     }
 
     websocket.onerror = function(error) {
