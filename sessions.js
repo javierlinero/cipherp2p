@@ -1,11 +1,16 @@
 document.addEventListener('DOMContentLoaded', function() {
     // Extract session ID from URL
     const params = new URLSearchParams(window.location.search);
-    const sessionID = params.get('sessionID');
+    let sessionID = params.get('sessionID');
     const host = params.get('host') === 'true';
 
-    // Display the session ID
-    document.getElementById('sessionIdDisplay').textContent = sessionID;
+    // Format sessionID with a dash
+    if (sessionID && sessionID.length === 8) {
+        sessionIDSplit = sessionID.slice(0, 4) + '-' + sessionID.slice(4);
+    }
+
+    // Display the formatted session ID
+    document.getElementById('sessionIdDisplay').textContent = sessionIDSplit;
 
     establishWebSocketConnection(sessionID, host);
 });
@@ -41,16 +46,23 @@ function updateUsersTable(data) {
     // Clear the entire table
     usersTable.innerHTML = '';
 
-    // Create and add the header row
     let headerRow = usersTable.insertRow();
-    let headerCell = headerRow.insertCell();
-    headerCell.textContent = 'User ID';
-    headerCell.style.fontWeight = 'bold'; // Optional, for styling the header
+    let idHeaderCell = headerRow.insertCell();
+    idHeaderCell.textContent = 'User ID';
+    idHeaderCell.style.fontWeight = 'bold'; // Optional, for styling the header
+
+    let roleHeaderCell = headerRow.insertCell();
+    roleHeaderCell.textContent = 'Role';
+    roleHeaderCell.style.fontWeight = 'bold'; // Optional, for styling the header
 
     data.forEach(user => {
         let row = usersTable.insertRow();
-        let cell = row.insertCell();
-        cell.textContent = user.ID;
+
+        let idCell = row.insertCell();
+        idCell.textContent = user.ID;
+
+        let roleCell = row.insertCell();
+        roleCell.textContent = user.Host ? 'Host' : 'Participant';
     });
 }
 

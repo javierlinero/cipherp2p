@@ -6,13 +6,17 @@
 </head>
 <body>
     <div id="container">
+        <!-- Back Button -->
+        <a href="index.html" id="back" class="back">
+            <img src="images/back.png" alt="Back" />
+        </a>
         <h1>Join a Session</h1>
         <div id="join-session-form">
-            <input type="text" id="joinSessionIdInput" class="session-input" placeholder="Enter Session ID">
-            <button id="submitJoinSession" class="session-btn">Join Session</button>
+            <input type="text" id="joinSessionIdInput" class="session-input" placeholder="1a2b-3c4d" maxlength="9">
+            <button id="submitJoinSession" class="session-btn">Join</button>
         </div>
         <div id="status"></div>
     </div>
-    <script src="joinSession.js"></script> <!-- Update the script source as needed -->
+    <script src="join.js"></script>
 </body>
 </html>

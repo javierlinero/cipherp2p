@@ -13,4 +13,10 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .catch(error => console.error('Error:', error));
     });
+    
+    document.getElementById('joinSession').addEventListener('click', function() {
+        window.location.href = 'join.html';
+    });
+
+
 });

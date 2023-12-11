@@ -9,6 +9,16 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
+    position: relative; /* Add relative positioning */
+}
+
+/* Style for the back button */
+.back {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    display: inline-block;
+    cursor: pointer; /* Optional, if you want the cursor to change to pointer on hover */
 }
 
 #container {
@@ -49,10 +59,17 @@ body {
     width: 100%;
     border-collapse: collapse;
     margin-top: 20px;
+    table-layout: fixed; /* This ensures columns are evenly spaced */
 }
 
 .users-table th, .users-table td {
     border: 1px solid #ddd;
     padding: 8px;
     text-align: left;
+    width: 50%; /* This ensures each column takes up half the width of the table */
+}
+
+.session-input::placeholder {
+    color: #888; /* Example color for placeholder text */
+    /* Add any additional styling for placeholder text here */
 }
