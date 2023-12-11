@@ -119,7 +119,7 @@ func (s *SessionMap) GetConnections(sessionID string) []*websocket.Conn {
 func JoinSessionRequestHandler(w http.ResponseWriter, r *http.Request) {
 	wss, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
-		log.Fatalf("error upgrading connection: %v", err)
+		log.Printf("error upgrading connection: %v", err)
 		return
 	}
 
