@@ -75,9 +75,10 @@ function establishWebSocketConnection(sessionID, host) {
         console.error('WebSocket error:', error);
     }
 
-    var backButton = document.getElementById('backButton');
+    var backButton = document.getElementById('back');
 
     backButton.addEventListener('click', function() {
+        console.log('Back button clicked');
         if (websocket && websocket.readyState === WebSocket.OPEN) {
             websocket.send(JSON.stringify({ Type: 'leaveSession', SessionID: sessionID, Host: host }));
         }
