@@ -46,9 +46,24 @@ function establishWebSocketConnection(sessionID, host) {
     }
 
     websocket.onmessage = function(event) {
-        const data = JSON.parse(event.data);
-        if (Array.isArray(data)) {
-            updateUsersTable(data);
+        try {
+            const data = JSON.parse(event.data);
+    
+            // First, check if data is an object with a 'type' property
+            if (typeof data === 'object' && data !== null && 'type' in data) {
+                if (data.type === 'sessionClosed') {
+                    window.location.href = 'closed.html';
+                    return; // Exit the function after handling
+                }
+                // Add more conditions here for different types of messages
+            }
+            // Then check if data is an array
+            else if (Array.isArray(data)) {
+                updateUsersTable(data);
+            }
+        } catch (error) {
+            console.error("Error parsing WebSocket message:", error);
+            // Handle parsing error
         }
     }
 
@@ -59,6 +74,15 @@ function establishWebSocketConnection(sessionID, host) {
     websocket.onerror = function(error) {
         console.error('WebSocket error:', error);
     }
+
+    var backButton = document.getElementById('backButton');
+
+    backButton.addEventListener('click', function() {
+        if (websocket && websocket.readyState === WebSocket.OPEN) {
+            websocket.send(JSON.stringify({ Type: 'leaveSession', SessionID: sessionID, Host: host }));
+        }
+        window.location.href = 'index.html';
+    });
     // here we'll add other event listeners, so when someones websocket closes, we can see how many users are in a session, and if none then we can
     // delete the session
 }

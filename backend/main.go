@@ -189,9 +189,55 @@ func JoinSessionRequestHandler(w http.ResponseWriter, r *http.Request) {
 					}
 				}
 			case "leaveSession":
+				if msg.Host {
+					Sessions.removeUserFromSession(msg.SessionID, userID)
+					// remove all users from the session and delete the session
+					Sessions.closeSession(msg.SessionID)
+				} else {
+					Sessions.removeUserFromSession(msg.SessionID, userID)
+					connections := Sessions.GetConnections(msg.SessionID)
+					allusers := Sessions.GetUsers(msg.SessionID)
+					serialized := UsersToSerialized(allusers)
+					for _, conn := range connections {
+						err := conn.WriteJSON(serialized)
+						if err != nil {
+							log.Printf("error sending message to connection: %v", err)
+							return
+						}
+					}
+				}
+				wss.Close()
 			}
 		}
 	}()
+}
+
+func (s *SessionMap) closeSession(sessionID string) {
+	s.Mutex.Lock()
+	defer s.Mutex.Unlock()
+
+	users, exists := s.Map[sessionID]
+	if !exists {
+		return
+	}
+
+	// Define a simple message struct
+	closeMessage := struct {
+		Message string `json:"message"`
+	}{
+		Message: "sessionClosed",
+	}
+
+	for _, user := range users {
+		if user.Conn != nil {
+			if msg, err := json.Marshal(closeMessage); err == nil {
+				user.Conn.WriteMessage(websocket.TextMessage, msg)
+			}
+			user.Conn.Close()
+		}
+	}
+
+	delete(s.Map, sessionID)
 }
 
 func (s *SessionMap) UpdateUserHostStatus(sessionId string, userID string, host bool) {
