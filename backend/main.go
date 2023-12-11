@@ -57,7 +57,7 @@ func (s *SessionMap) MakeSession() string {
 	}
 	sessionId := string(lenSess)
 
-	s.Map[sessionId] = make([]User, 0)
+	s.Map[sessionId] = make([]User, 4)
 	return sessionId
 }
 
@@ -66,6 +66,9 @@ func (s *SessionMap) AddUser(sessionId string, host bool, conn *websocket.Conn) 
 	s.Mutex.Lock()
 	defer s.Mutex.Unlock()
 	log.Println("inserting new user into session: ", sessionId)
+	if _, ok := s.Map[sessionId]; !ok {
+		s.Map[sessionId] = []User{}
+	}
 	s.Map[sessionId] = append(s.Map[sessionId], User{userID, host, conn})
 }
 
@@ -96,45 +99,37 @@ var upgrader = websocket.Upgrader{
 	},
 }
 
-func JoinSessionRequestHandler(w http.ResponseWriter, r *http.Request) {
-	sessionID := r.URL.Query().Get("sessionId")
+func (s *SessionMap) GetConnections(sessionID string) []*websocket.Conn {
+	s.Mutex.RLock()
+	defer s.Mutex.RUnlock()
 
+	users, exists := s.Map[sessionID]
+	if !exists {
+		// Session does not exist, return an empty slice
+		return []*websocket.Conn{}
+	}
+
+	var connections []*websocket.Conn
+	for _, user := range users {
+		connections = append(connections, user.Conn)
+	}
+	return connections
+}
+
+func JoinSessionRequestHandler(w http.ResponseWriter, r *http.Request) {
 	wss, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Fatalf("error upgrading connection: %v", err)
 		return
 	}
 
-	// users := Sessions.GetUsers(sessionID)
-
-	// // Convert to a slice of SerializableUser (or similar structure)
-	// serializables := UsersToSerialized(users)
-
-	// // Send the list of users back to the frontend
-	// err = wss.WriteJSON(serializables)
-	// if err != nil {
-	// 	log.Printf("error sending user list: %v", err)
-	// 	return
-	// }
-
 	go func() {
-		defer func() {
-			Sessions.removeUserFromSession(sessionID, wss)
-			allusers := Sessions.GetUsers(sessionID)
-			serialized := UsersToSerialized(allusers)
-			err = wss.WriteJSON(serialized)
-			if err != nil {
-				log.Printf("error sending user list: %v", err)
-				return
-			}
-			wss.Close()
-		}()
+		defer wss.Close()
 		for {
 			var msg SignalMessage
 			err := wss.ReadJSON(&msg)
 			if err != nil {
 				if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
-					Sessions.removeUserFromSession(msg.SessionID, wss)
 					log.Printf("WebSocket error: %v", err)
 				} else {
 					log.Println("WebSocket closed")
@@ -150,13 +145,28 @@ func JoinSessionRequestHandler(w http.ResponseWriter, r *http.Request) {
 			case "candidate":
 				//handle webrtc ICE candidate
 			case "joinSession":
-				Sessions.AddUser(msg.SessionID, false, wss)
-				allusers := Sessions.GetUsers(msg.SessionID)
-				serialized := UsersToSerialized(allusers)
-				err = wss.WriteJSON(serialized)
-				if err != nil {
-					log.Printf("error sending user list: %v", err)
-					return
+				if msg.Host {
+					// add the user to the session
+					Sessions.AddUser(msg.SessionID, true, wss)
+					allusers := Sessions.GetUsers(msg.SessionID)
+					serialized := UsersToSerialized(allusers)
+					err := wss.WriteJSON(serialized)
+					if err != nil {
+						log.Printf("error sending user list: %v", err)
+						return
+					}
+				} else {
+					Sessions.AddUser(msg.SessionID, false, wss)
+					connections := Sessions.GetConnections(msg.SessionID)
+					allusers := Sessions.GetUsers(msg.SessionID)
+					serialized := UsersToSerialized(allusers)
+					for _, conn := range connections {
+						err := conn.WriteJSON(serialized) // Replace 'message' with the actual message you want to send
+						if err != nil {
+							log.Printf("error sending message to connection: %v", err)
+							return
+						}
+					}
 				}
 			case "leaveSession":
 			}
@@ -194,6 +204,7 @@ func (s *SessionMap) removeUserFromSession(sessionID string, conn *websocket.Con
 type SignalMessage struct {
 	Type      string // offer, answer, candidate
 	SessionID string // sessionID
+	Host      bool   // host or not
 }
 
 func main() {

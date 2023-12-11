@@ -20,49 +20,37 @@ body {
     text-align: center;
 }
 
-h1 {
-    color: #5a5a5a;
-}
-
-.input-group {
-    margin: 20px 0;
-}
-
-input[type="file"] {
-    border: 1px solid #ddd;
-    padding: 10px;
-    width: 70%;
-    margin-right: 10px;
-}
-
-button {
-    background-color: #4CAF50; /* You can remove this line if you want to use CSS from styles.css */
+.session-btn {
+    background-color: #4CAF50;
     color: white;
     padding: 10px 15px;
     border: none;
     border-radius: 4px;
     cursor: pointer;
-    transition: background-color 0.3s;
+    margin-top: 10px;
+    width: 100%;
 }
 
-button:hover {
-    background-color: #45a049; /* You can remove this line if you want to use CSS from styles.css */
+.session-btn:hover {
+    background-color: #45a049;
 }
 
-/* Add the button styles from styles.css */
-
-.popup-bold-btn {
-    font-size: 20px !important;
-    background-color: #0D96D3 !important;
-    border-color: #0D96D3 !important;
+.session-input {
+    width: 100%;
+    padding: 10px;
+    margin-top: 10px;
+    border-radius: 4px;
+    border: 1px solid #ddd;
 }
 
-.popup-bold-btn:hover {
-    background-color: rgba(13, 152, 211, 0.80) !important;
-    border-color: rgba(13, 152, 211, 0.80) !important;
-}
-
-#status {
+.users-table {
+    width: 100%;
+    border-collapse: collapse;
     margin-top: 20px;
-    color: #666;
+}
+
+.users-table th, .users-table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
 }

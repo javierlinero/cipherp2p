@@ -2,19 +2,20 @@ document.addEventListener('DOMContentLoaded', function() {
     // Extract session ID from URL
     const params = new URLSearchParams(window.location.search);
     const sessionID = params.get('sessionID');
+    const host = params.get('host');
 
     // Display the session ID
     document.getElementById('sessionIdDisplay').textContent = sessionID;
 
-    establishWebSocketConnection(sessionID);
+    establishWebSocketConnection(sessionID, host);
 });
 
 
-function establishWebSocketConnection(sessionID) {
-    const websocket = new WebSocket(`wss://damp-brushlands-64193-d1cbfc7ae5d4.herokuapp.com/join-room?sessionID=${sessionID}`);
+function establishWebSocketConnection(sessionID, host) {
+    const websocket = new WebSocket(`wss://damp-brushlands-64193-d1cbfc7ae5d4.herokuapp.com/join-room`);
 
     websocket.onopen = function() {
-        websocket.send(JSON.stringify({ Type: 'joinSession', SessionID: sessionID }));
+        websocket.send(JSON.stringify({ Type: 'joinSession', SessionID: sessionID, Host: host }));
     }
 
     websocket.onmessage = function(event) {
@@ -25,7 +26,7 @@ function establishWebSocketConnection(sessionID) {
     }
 
     websocket.onclose = function() {
-        websocket.send(JSON.stringify({ Type: 'leaveSession', SessionID: sessionID }));
+        console.log('Connection closed');
     }
 
     // here we'll add other event listeners, so when someones websocket closes, we can see how many users are in a session, and if none then we can

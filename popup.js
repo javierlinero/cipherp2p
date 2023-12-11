@@ -3,7 +3,7 @@ document.addEventListener('DOMContentLoaded', function() {
         fetch('https://damp-brushlands-64193-d1cbfc7ae5d4.herokuapp.com/create-room') 
         .then(response => response.json())
         .then(sessionID => {
-            window.location.href = 'session.html?sessionID=' + sessionID;
+            window.location.href = 'session.html?sessionID=' + sessionID + '&host=true';
         })
         .catch(error => console.error('Error:', error));
     });

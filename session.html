@@ -2,17 +2,16 @@
 <html>
 <head>
     <title>Session Page</title>
-    <!-- Include your styles and scripts here -->
+    <link rel="stylesheet" type="text/css" href="styles.css">
 </head>
 <body>
-    <h1>Session Users</h1>
-    <div id="sessionInfo">
-        <strong>Session ID:</strong> <span id="sessionIdDisplay"></span>
+    <div id="container">
+        <h1>Session Users</h1>
+        <div id="sessionInfo">
+            <strong>Session ID:</strong> <span id="sessionIdDisplay"></span>
+        </div>
+        <table id="usersTable" class="users-table"></table>
     </div>
-    </div>
-    <table id="usersTable">
-    </table>
-
-    <script src ="sessions.js"></script>
+    <script src="sessions.js"></script>
 </body>
 </html>
