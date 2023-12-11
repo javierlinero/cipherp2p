@@ -57,7 +57,7 @@ func (s *SessionMap) MakeSession() string {
 	}
 	sessionId := string(lenSess)
 
-	s.Map[sessionId] = make([]User, 4)
+	s.Map[sessionId] = make([]User, 0)
 	return sessionId
 }
 
