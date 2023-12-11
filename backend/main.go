@@ -216,15 +216,15 @@ func JoinSessionRequestHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *SessionMap) userIsHost(sessionID string, userID string) bool {
-	s.Mutex.Lock()
-	defer s.Mutex.Unlock()
+	s.Mutex.RLock() // Use RLock for reading
+	defer s.Mutex.RUnlock()
 	users, exists := s.Map[sessionID]
 	if !exists {
 		return false
 	}
-	for i, user := range users {
+	for _, user := range users {
 		if user.ID == userID {
-			return users[i].Host
+			return user.Host
 		}
 	}
 	return false
