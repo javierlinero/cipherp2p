@@ -29,6 +29,6 @@ document.addEventListener('DOMContentLoaded', function() {
     submitButton.addEventListener('click', function() {
         var sessionId = inputField.value.replace(/-/g, ''); // Remove all dashes
         // Redirect to the session page with the session ID and host parameters
-        window.location.href = 'session.html?sessionID=' + sessionId + '&host=true';
+        window.location.href = 'session.html?sessionID=' + sessionId + '&host=false';
     });
 });
