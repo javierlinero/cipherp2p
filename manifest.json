@@ -4,7 +4,10 @@
     "version": "1.0",
     "description": "A Chrome extension for peer-to-peer file sharing.",
     "permissions": ["storage",
-                    "activeTab"],
+                    "tabs", 
+                    "activeTab",
+                    "scripting",
+                    "windows"],
     "host_permissions": [
       "https://damp-brushlands-64193-d1cbfc7ae5d4.herokuapp.com/*"
     ],

@@ -14,13 +14,32 @@ document.addEventListener('DOMContentLoaded', function() {
     // Display the formatted session ID
     document.getElementById('sessionIdDisplay').textContent = sessionIDSplit;
 
+
+    var sessionIdDisplay = document.getElementById('sessionIdDisplay');
+    var copyFeedback = document.getElementById('copyFeedback');
+
+    sessionIdDisplay.addEventListener('click', function() {
+        navigator.clipboard.writeText(sessionID).then(function() {
+            // Success feedback
+            copyFeedback.textContent = 'Session ID Copied!';
+            copyFeedback.style.display = 'block';
+            setTimeout(function() {
+                copyFeedback.style.display = 'none';
+            }, 2000); // Hide the feedback message after 2 seconds
+        }).catch(function(err) {
+            // Error handling
+            copyFeedback.textContent = 'Failed to copy';
+            console.error('Error in copying text: ', err);
+        });
+    });
+
     establishWebSocketConnection(sessionID, host);
 });
 
 
 
 function establishWebSocketConnection(sessionID, host) {
-    const websocket = new WebSocket(`wss://damp-brushlands-64193-d1cbfc7ae5d4.herokuapp.com/join-room`);
+    const websocket = new WebSocket(`wss://damp-brushlands-64193-d1cbfc7ae5d4.herokuapp.com/join-room?sessionID=${sessionID}`);
 
     websocket.onopen = function() {
         websocket.send(JSON.stringify({ Type: 'joinSession', SessionID: sessionID, Host: host }));

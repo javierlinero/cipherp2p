@@ -61,8 +61,7 @@ func (s *SessionMap) MakeSession() string {
 	return sessionId
 }
 
-func (s *SessionMap) AddUser(sessionId string, host bool, conn *websocket.Conn) {
-	userID := uuid.New().String()[:8]
+func (s *SessionMap) AddUser(sessionId string, host bool, conn *websocket.Conn, userID string) {
 	s.Mutex.Lock()
 	defer s.Mutex.Unlock()
 	log.Println("inserting new user into session: ", sessionId)
@@ -124,6 +123,16 @@ func JoinSessionRequestHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	sessionID := r.URL.Query().Get("sessionID")
+	if sessionID == "" {
+		log.Println("Session ID is missing")
+		wss.Close()
+		return
+	}
+
+	userID := uuid.New().String()[:8]
+	Sessions.AddUser(sessionID, false, wss, userID)
+
 	go func() {
 		defer wss.Close()
 		for {
@@ -134,6 +143,17 @@ func JoinSessionRequestHandler(w http.ResponseWriter, r *http.Request) {
 					log.Printf("WebSocket error: %v", err)
 				} else {
 					log.Println("WebSocket closed")
+				}
+				Sessions.removeUserFromSession(sessionID, userID)
+				connections := Sessions.GetConnections(sessionID)
+				allusers := Sessions.GetUsers(sessionID)
+				serialized := UsersToSerialized(allusers)
+				for _, conn := range connections {
+					err := conn.WriteJSON(serialized)
+					if err != nil {
+						log.Printf("error sending message to connection: %v", err)
+						return
+					}
 				}
 				break
 			}
@@ -148,7 +168,7 @@ func JoinSessionRequestHandler(w http.ResponseWriter, r *http.Request) {
 			case "joinSession":
 				if msg.Host {
 					// add the user to the session
-					Sessions.AddUser(msg.SessionID, true, wss)
+					Sessions.UpdateUserHostStatus(msg.SessionID, userID, true)
 					allusers := Sessions.GetUsers(msg.SessionID)
 					serialized := UsersToSerialized(allusers)
 					err := wss.WriteJSON(serialized)
@@ -157,12 +177,11 @@ func JoinSessionRequestHandler(w http.ResponseWriter, r *http.Request) {
 						return
 					}
 				} else {
-					Sessions.AddUser(msg.SessionID, false, wss)
 					connections := Sessions.GetConnections(msg.SessionID)
 					allusers := Sessions.GetUsers(msg.SessionID)
 					serialized := UsersToSerialized(allusers)
 					for _, conn := range connections {
-						err := conn.WriteJSON(serialized) // Replace 'message' with the actual message you want to send
+						err := conn.WriteJSON(serialized)
 						if err != nil {
 							log.Printf("error sending message to connection: %v", err)
 							return
@@ -175,6 +194,21 @@ func JoinSessionRequestHandler(w http.ResponseWriter, r *http.Request) {
 	}()
 }
 
+func (s *SessionMap) UpdateUserHostStatus(sessionId string, userID string, host bool) {
+	s.Mutex.Lock()
+	defer s.Mutex.Unlock()
+	users, exists := s.Map[sessionId]
+	if !exists {
+		return
+	}
+	for i, user := range users {
+		if user.ID == userID {
+			users[i].Host = host
+			break
+		}
+	}
+}
+
 func UsersToSerialized(users []User) []SerializableUser {
 	var serializables []SerializableUser
 	for _, user := range users {
@@ -183,7 +217,7 @@ func UsersToSerialized(users []User) []SerializableUser {
 	return serializables
 }
 
-func (s *SessionMap) removeUserFromSession(sessionID string, conn *websocket.Conn) {
+func (s *SessionMap) removeUserFromSession(sessionID string, userID string) {
 	s.Mutex.Lock()
 	defer s.Mutex.Unlock()
 	users, exists := s.Map[sessionID]
@@ -193,7 +227,7 @@ func (s *SessionMap) removeUserFromSession(sessionID string, conn *websocket.Con
 	}
 
 	for i, user := range users {
-		if user.Conn == conn {
+		if user.ID == userID {
 			// Remove the user from the slice
 			s.Map[sessionID] = append(users[:i], users[i+1:]...)
 			return

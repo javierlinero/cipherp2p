@@ -11,8 +11,9 @@
         <div id="sessionInfo">
             <strong>Session ID:</strong> 
             <br>
-            <a id="sessionIdDisplay"></a>
+            <span id="sessionIdDisplay" style="cursor: pointer;">[Session ID Here]</span> <!-- Made it a span for better control -->
         </div>
+        <p id="copyFeedback" style="display: none;">Session ID Copied!</p> <!-- Feedback message -->
         <table id="usersTable" class="users-table"></table>
     </div>
     <script src="sessions.js"></script>
