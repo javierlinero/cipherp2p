@@ -59,6 +59,7 @@ function establishWebSocketConnection(sessionID, host) {
 
     websocket.onerror = function(error) {
         console.error('WebSocket error:', error);
+        window.location.href = 'error.html'
     }
 
     var backButton = document.getElementById('back');
