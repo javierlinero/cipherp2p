@@ -160,6 +160,7 @@ func JoinSessionRequestHandler(w http.ResponseWriter, r *http.Request) {
 						}
 					}
 				}
+				wss.Close()
 			}
 
 			switch msg.Type {
