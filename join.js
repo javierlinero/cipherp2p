@@ -7,26 +7,28 @@ document.addEventListener('DOMContentLoaded', function() {
 
     inputField.addEventListener('input', function() {
         var value = inputField.value;
-        value = value.replace(/[^0-9-]/g, '').replace(/-/g, ''); // Remove non-numeric characters and dashes
 
-        if (value.length > 4) {
+        // Allow only alphanumeric characters and remove dashes (except the one we add)
+        value = value.replace(/[^0-9a-zA-Z-]/g, '').replace(/(?!^)-/g, '');
+
+        // Add a dash after the fourth character if not already present
+        if (value.length > 4 && value[4] !== '-') {
             value = value.slice(0, 4) + '-' + value.slice(4);
         }
 
-        inputField.value = value; // Update the value of the input field
-
-        if (value.length === 9) { // Check if the length is 9 (including the dash)
-            submitButton.disabled = false; // Enable the submit button
-        } else {
-            submitButton.disabled = true; // Disable the submit button
+        // Update the input field only if the value has changed
+        // to avoid losing the cursor position
+        if (inputField.value !== value) {
+            inputField.value = value;
         }
+
+        // Enable the submit button if the length is exactly 9 (including dash)
+        submitButton.disabled = value.length !== 9;
     });
 
     submitButton.addEventListener('click', function() {
-        var sessionId = inputField.value;
-        window.location.href = 'session.html?sessionID=' + sessionID + '&host=true';
-        // Add your code here to handle the session ID
-        // Optionally, clear the input field after submission
-        // inputField.value = '';
+        var sessionId = inputField.value.replace(/-/g, ''); // Remove all dashes
+        // Redirect to the session page with the session ID and host parameters
+        window.location.href = 'session.html?sessionID=' + sessionId + '&host=true';
     });
 });

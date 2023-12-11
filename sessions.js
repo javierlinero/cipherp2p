@@ -1,10 +1,12 @@
 document.addEventListener('DOMContentLoaded', function() {
     // Extract session ID from URL
     const params = new URLSearchParams(window.location.search);
-    let sessionID = params.get('sessionID');
+    let sessionID = params.get('sessionID'); // Use let instead of const
     const host = params.get('host') === 'true';
 
-    // Format sessionID with a dash
+    let sessionIDSplit = sessionID; // Declare sessionIDSplit variable
+
+    // Format sessionID with a dash if it has the correct length
     if (sessionID && sessionID.length === 8) {
         sessionIDSplit = sessionID.slice(0, 4) + '-' + sessionID.slice(4);
     }
@@ -14,6 +16,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     establishWebSocketConnection(sessionID, host);
 });
+
 
 
 function establishWebSocketConnection(sessionID, host) {
