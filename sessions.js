@@ -2,7 +2,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Extract session ID from URL
     const params = new URLSearchParams(window.location.search);
     const sessionID = params.get('sessionID');
-    const host = params.get('host');
+    const host = params.get('host') === 'true';
 
     // Display the session ID
     document.getElementById('sessionIdDisplay').textContent = sessionID;
@@ -29,6 +29,9 @@ function establishWebSocketConnection(sessionID, host) {
         console.log('Connection closed');
     }
 
+    websocket.onerror = function(error) {
+        console.error('WebSocket error:', error);
+    }
     // here we'll add other event listeners, so when someones websocket closes, we can see how many users are in a session, and if none then we can
     // delete the session
 }
