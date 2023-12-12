@@ -9,7 +9,8 @@
   <h2 align="center">Cipher P2P</h3>
   <h3 align="center">file sharing &amp; file management system as a google chrome extension</h3>
 </div>
-### Objective
+
+## Objective
 
 ### Installation
 Make sure to download our repository or clone with `git clone https://github.com/javierlinero/cipherp2p`
