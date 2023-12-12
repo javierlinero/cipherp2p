@@ -88,7 +88,7 @@ function createPeerConnection(sessionID, host, otherUserId) {
             sendSignalMessage(sessionID, host, 'candidate', { candidate: event.candidate, to: otherUserId });
         }
     };
-
+    console.log('this may be the issue')
     // Create a data channel
     const dataChannel = peerConnection.createDataChannel("fileChannel");
     localDataChannels[otherUserId] = dataChannel;
