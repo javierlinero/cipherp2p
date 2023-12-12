@@ -240,6 +240,7 @@ function updateUsersTable(data, sessionID, host) {
     });
     if (!host) {
         const makeOfferArray = removeStringFromArray(data);
+        console.log(makeOfferArray);
         makeOfferArray.forEach(userId => {
             makeOffer(sessionID, host, userId);
         });
