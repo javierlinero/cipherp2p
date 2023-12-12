@@ -168,7 +168,9 @@ func JoinSessionRequestHandler(w http.ResponseWriter, r *http.Request) {
 
 			switch msg.Type {
 			case "offer", "answer", "candidate":
+				log.Println("Received signal message: ", msg.Type)
 				handleWebRTCSignal(msg, userID)
+				log.Println("please work")
 			case "joinSession":
 				if msg.Host {
 					// add the user to the session
