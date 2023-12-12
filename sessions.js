@@ -91,10 +91,12 @@ function createPeerConnection(sessionID, host, otherUserId) {
     console.log('this may be the issue')
     // Create a data channel
     const dataChannel = peerConnection.createDataChannel("fileChannel");
+    console.log('is this it?')
     localDataChannels[otherUserId] = dataChannel;
-
+    console.log('or are you the error')
     setupDataChannelEvents(dataChannel);
-
+    console.log('nope')
+    
     peerConnections[otherUserId] = peerConnection;
     return peerConnection;
 }
