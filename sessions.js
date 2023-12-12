@@ -62,11 +62,7 @@ function sendSignalMessage (websocket, sessionID, host, type, data) {
     }
 
     // Send the message to the signaling server
-    if (websocket && websocket.readyState === WebSocket.OPEN) {
-        websocket.send(JSON.stringify(message));
-    } else {
-        console.error('WebSocket is not connected.');
-    }
+    websocket.send(JSON.stringify(message));
 }
 
 
