@@ -194,6 +194,7 @@ function establishWebSocketConnection(sessionID, host) {
     backButton.addEventListener('click', function() {
         console.log('Back button clicked');
         if (websocket && websocket.readyState === WebSocket.OPEN) {
+            console.log("closing?????")
             websocket.send(JSON.stringify({ Type: 'leaveSession', SessionID: sessionID, Host: host }));
         }
         window.location.href = 'index.html';
