@@ -66,6 +66,7 @@ function sendSignalMessage (sessionID, host, type, data) {
     // Send the message to the signaling server
 
     if (websocket && websocket.readyState === WebSocket.OPEN) {
+        console.log(message);
         websocket.send(JSON.stringify(message));
     }
 }
@@ -112,7 +113,6 @@ function makeOffer(sessionID, host, toUserId) {
     peerConnection.createOffer()
         .then(offer => peerConnection.setLocalDescription(offer))
         .then(() => {
-            console.log(typeof peerConnection.localDescription);
             sendSignalMessage(sessionID, host, 'offer', { sdp: peerConnection.localDescription.sdp, to: toUserId });
             console.log("Offer sent successfully.");
         });
