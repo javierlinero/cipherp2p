@@ -39,7 +39,9 @@ document.addEventListener('DOMContentLoaded', function() {
 let peerConnections = {}; // store multiple peer connections
 const localDataChannels = {};
 
-function sendSignalMessage (websocket, sessionID, host, type, data) {
+var websocket
+
+function sendSignalMessage (sessionID, host, type, data) {
     const message = {
         Type: type,
         SessionID: sessionID, // Make sure this is defined in your scope
@@ -62,11 +64,14 @@ function sendSignalMessage (websocket, sessionID, host, type, data) {
     }
 
     // Send the message to the signaling server
-    websocket.send(JSON.stringify(message));
+
+    if (websocket && websocket.readyState === WebSocket.OPEN) {
+        websocket.send(JSON.stringify(message));
+    }
 }
 
 
-function createPeerConnection(websocket, sessionID, host, otherUserId) {
+function createPeerConnection(sessionID, host, otherUserId) {
     const peerConnection = new RTCPeerConnection({
         iceServers: [
             { urls: 'stun:stun.services.mozilla.com:3478' },
@@ -80,7 +85,7 @@ function createPeerConnection(websocket, sessionID, host, otherUserId) {
     // Handle ICE candidates
     peerConnection.onicecandidate = event => {
         if (event.candidate) {
-            sendSignalMessage(websocket, sessionID, host, 'candidate', { candidate: event.candidate, to: otherUserId });
+            sendSignalMessage(sessionID, host, 'candidate', { candidate: event.candidate, to: otherUserId });
         }
     };
 
@@ -102,22 +107,22 @@ function setupDataChannelEvents(dataChannel) {
     dataChannel.onclose = () => console.log("Data channel is closed");
 }
 
-function makeOffer(websocket, sessionID, host, toUserId) {
+function makeOffer(sessionID, host, toUserId) {
     const peerConnection = createPeerConnection(toUserId);
     peerConnection.createOffer()
         .then(offer => peerConnection.setLocalDescription(offer))
         .then(() => {
-            sendSignalMessage(websocket, sessionID, host, 'offer', { sdp: peerConnection.localDescription, to: toUserId });
+            sendSignalMessage(sessionID, host, 'offer', { sdp: peerConnection.localDescription, to: toUserId });
         });
 }
 
-function handleReceivedOffer(websocket, sessionID, host, SDP, fromUserId) {
+function handleReceivedOffer(sessionID, host, SDP, fromUserId) {
     const peerConnection = createPeerConnection(fromUserId);
     peerConnection.setRemoteDescription(new RTCSessionDescription(SDP))
         .then(() => peerConnection.createAnswer())
         .then(answer => peerConnection.setLocalDescription(answer))
         .then(() => {
-            sendSignalMessage(websocket, sessionID, host, 'answer', { sdp: peerConnection.localDescription, to: fromUserId });
+            sendSignalMessage(sessionID, host, 'answer', { sdp: peerConnection.localDescription, to: fromUserId });
         });
 }
 
@@ -149,7 +154,7 @@ function handleReceivedCandidate(candidate, fromUserId) {
 
 
 function establishWebSocketConnection(sessionID, host) {
-    const websocket = new WebSocket(`wss://damp-brushlands-64193-d1cbfc7ae5d4.herokuapp.com/join-room?sessionID=${sessionID}`);
+    websocket = new WebSocket(`wss://damp-brushlands-64193-d1cbfc7ae5d4.herokuapp.com/join-room?sessionID=${sessionID}`);
 
     websocket.onopen = function() {
         websocket.send(JSON.stringify({ Type: 'joinSession', SessionID: sessionID, Host: host, SDP: null, Candidate: null, To: null, From: null }));
@@ -158,11 +163,11 @@ function establishWebSocketConnection(sessionID, host) {
     websocket.onmessage = function(event) {
         const data = JSON.parse(event.data);
         if (typeof data === 'object' && Object.keys(data).length === 2) {
-            updateUsersTable(data, websocket, sessionID, host);
+            updateUsersTable(data, sessionID, host);
         } else {
             switch (data.Type) {
                 case 'offer':
-                    handleReceivedOffer(websocket, sessionID, host, data.SDP, data.From);
+                    handleReceivedOffer(sessionID, host, data.SDP, data.From);
                     break;
                 case 'answer':
                     handleReceivedAnswer(data.SDP, data.From);
@@ -206,7 +211,7 @@ function removeStringFromArray(data) {
     return array;
 }
 
-function updateUsersTable(data, websocket, sessionID, host) {
+function updateUsersTable(data, sessionID, host) {
     const usersTable = document.getElementById('usersTable');
     // Clear the entire table
     usersTable.innerHTML = '';
@@ -232,7 +237,7 @@ function updateUsersTable(data, websocket, sessionID, host) {
     if (!host) {
         const makeOfferArray = removeStringFromArray(data);
         makeOfferArray.forEach(userId => {
-            makeOffer(websocket, sessionID, host, userId);
+            makeOffer(sessionID, host, userId);
         });
     }
 }
