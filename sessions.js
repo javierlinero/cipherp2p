@@ -88,15 +88,13 @@ function createPeerConnection(sessionID, host, otherUserId) {
             sendSignalMessage(sessionID, host, 'candidate', { candidate: event.candidate, to: otherUserId });
         }
     };
-    console.log('this may be the issue')
+
     // Create a data channel
     const dataChannel = peerConnection.createDataChannel("fileChannel");
-    console.log('is this it?')
     localDataChannels[otherUserId] = dataChannel;
-    console.log('or are you the error')
+
     setupDataChannelEvents(dataChannel);
-    console.log('nope')
-    
+
     peerConnections[otherUserId] = peerConnection;
     return peerConnection;
 }
@@ -115,6 +113,7 @@ function makeOffer(sessionID, host, toUserId) {
         .then(offer => peerConnection.setLocalDescription(offer))
         .then(() => {
             sendSignalMessage(sessionID, host, 'offer', { sdp: peerConnection.localDescription, to: toUserId });
+            console.log("Offer sent successfully.");
         });
 }
 
@@ -125,6 +124,7 @@ function handleReceivedOffer(sessionID, host, SDP, fromUserId) {
         .then(answer => peerConnection.setLocalDescription(answer))
         .then(() => {
             sendSignalMessage(sessionID, host, 'answer', { sdp: peerConnection.localDescription, to: fromUserId });
+            console.log("Received offer and sent answer")
         });
 }
 
