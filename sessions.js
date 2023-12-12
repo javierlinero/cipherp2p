@@ -112,6 +112,7 @@ function makeOffer(sessionID, host, toUserId) {
     peerConnection.createOffer()
         .then(offer => peerConnection.setLocalDescription(offer))
         .then(() => {
+            console.log(typeof peerConnection.localDescription);
             sendSignalMessage(sessionID, host, 'offer', { sdp: peerConnection.localDescription, to: toUserId });
             console.log("Offer sent successfully.");
         });
