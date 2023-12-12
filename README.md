@@ -23,7 +23,7 @@ Click on the `Developer mode` on the top right and this taskbar should appear
   <img src="images/extension.png" style=align>
 </div>
 <br />
-Now click on `Load unpacked` and make sure to upload the `cipherp2p` repository you just downloaded, and you can now click on the extension on the top right and it should appear as so:
+<p>Now click on `Load unpacked` and make sure to upload the `cipherp2p` repository you just downloaded, and you can now click on the extension on the top right and it should appear as so:</p>
 <br />
 <div align="center">
   <img src="images/loaded_extension.png" style=align>
