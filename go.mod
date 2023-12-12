@@ -2,7 +2,10 @@ module main.go
 
 go 1.21.3
 
-require github.com/gorilla/websocket v1.5.1
+require (
+	github.com/gorilla/websocket v1.5.1
+	github.com/pion/webrtc/v3 v3.2.23
+)
 
 require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
@@ -21,7 +24,6 @@ require (
 	github.com/pion/stun v0.6.1 // indirect
 	github.com/pion/transport/v2 v2.2.3 // indirect
 	github.com/pion/turn/v2 v2.1.3 // indirect
-	github.com/pion/webrtc/v3 v3.2.23 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/stretchr/testify v1.8.4 // indirect
 	golang.org/x/crypto v0.16.0 // indirect
