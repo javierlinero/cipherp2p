@@ -144,6 +144,7 @@ func JoinSessionRequestHandler(w http.ResponseWriter, r *http.Request) {
 					log.Printf("WebSocket error: %v", err)
 				} else {
 					log.Println("WebSocket closed")
+					log.Println(err)
 				}
 				if Sessions.userIsHost(sessionID, userID) {
 					// remove all users from the session and delete the session
