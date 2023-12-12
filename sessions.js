@@ -210,7 +210,7 @@ function removeStringFromArray(data) {
     const stringToRemove = data.UserID;
     let array = data.Users;
 
-    array = array.filter(item => item !== stringToRemove);
+    array = array.filter(item => item.ID !== stringToRemove);
 
     return array;
 }
