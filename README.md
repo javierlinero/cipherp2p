@@ -18,11 +18,14 @@ From there make sure you're on a Google Chrome browser, and type into the url `c
 
 Click on the `Developer mode` on the top right and this taskbar should appear
 
-<img src="images/extension.png">
+<div align="center">
+  <img src="images/extension.png" style=align>
+</div>
 
 Now click on `Load unpacked` and make sure to upload the `cipherp2p` repository you just downloaded, and you can now click on the extension on the top right and it should appear as so:
-
-<img src="images/loaded_extension.png">
+<div align="center">
+  <img src="images/loaded_extension.png" style=align>
+</div>
 
 ### Built With
 ![HTML5](https://img.shields.io/badge/html5-%23E34F26.svg?style=for-the-badge&logo=html5&logoColor=white)
