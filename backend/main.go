@@ -216,6 +216,38 @@ func JoinSessionRequestHandler(w http.ResponseWriter, r *http.Request) {
 	}()
 }
 
+func handleWebRTCSignal(msg SignalMessage, sessionID string) {
+	connections := Sessions.GetConnections(sessionID)
+	for _, conn := range connections {
+		if conn != nil {
+			// Forward the message to the other peer(s)
+			// Check if the message should be sent to a specific user
+			if msg.To != "" && Sessions.getUserID(conn) != msg.To {
+				continue
+			}
+			err := conn.WriteJSON(msg)
+			if err != nil {
+				log.Printf("error forwarding WebRTC signal: %v", err)
+				return
+			}
+		}
+	}
+}
+
+// Add a function to get userID from a connection
+func (s *SessionMap) getUserID(conn *websocket.Conn) string {
+	s.Mutex.RLock()
+	defer s.Mutex.RUnlock()
+	for _, users := range s.Map {
+		for _, user := range users {
+			if user.Conn == conn {
+				return user.ID
+			}
+		}
+	}
+	return ""
+}
+
 func (s *SessionMap) userIsHost(sessionID string, userID string) bool {
 	s.Mutex.RLock() // Use RLock for reading
 	defer s.Mutex.RUnlock()

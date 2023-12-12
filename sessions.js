@@ -36,6 +36,105 @@ document.addEventListener('DOMContentLoaded', function() {
     establishWebSocketConnection(sessionID, host);
 });
 
+let peerConnections = {}; // store multiple peer connections
+const localDataChannels = {};
+
+function sendSignalMessage (websocket, type, data) {
+    if (!websocket || websocket.readyState !== WebSocket.OPEN) {
+        console.error('WebSocket is not connected or not in OPEN state.');
+        return;
+    }
+
+    const message = {
+        Type: type,
+        SessionID: sessionID, // Make sure this is defined in your scope
+        Host: host, // This should be a boolean indicating if the sender is the host
+    };
+
+    // Add additional fields based on the message type
+    if (type === 'offer' || type === 'answer') {
+        message.SDP = data.sdp ? data.sdp : null;
+    } else if (type === 'candidate') {
+        message.Candidate = data.candidate ? data.candidate : null;
+    }
+
+    // Add the 'to' field for direct signaling messages if applicable
+    if (data.to) {
+        message.To = data.to;
+    }
+
+    // Send the message to the signaling server
+    if (websocket && websocket.readyState === WebSocket.OPEN) {
+        websocket.send(JSON.stringify(message));
+    } else {
+        console.error('WebSocket is not connected.');
+    }
+}
+
+
+function createPeerConnection(websocket, otherUserId) {
+    const peerConnection = new RTCPeerConnection({
+        iceServers: [{ urls: 'stun1.l.google.com:19302' }]
+    });
+    console.log('Created local peer connection object')
+
+    // Handle ICE candidates
+    peerConnection.onicecandidate = event => {
+        if (event.candidate) {
+            sendSignalMessage(websocket, 'candidate', { candidate: event.candidate, to: otherUserId });
+        }
+    };
+
+    // Create a data channel
+    const dataChannel = peerConnection.createDataChannel("fileChannel");
+    localDataChannels[otherUserId] = dataChannel;
+
+    setupDataChannelEvents(dataChannel);
+
+    peerConnections[otherUserId] = peerConnection;
+    return peerConnection;
+}
+
+function setupDataChannelEvents(dataChannel) {
+    dataChannel.onopen = () => console.log("Data channel is open");
+    dataChannel.onmessage = event => {
+        // Handle incoming file data
+    };
+    dataChannel.onclose = () => console.log("Data channel is closed");
+}
+
+function makeOffer(websocket, toUserId) {
+    const peerConnection = createPeerConnection(toUserId);
+    peerConnection.createOffer()
+        .then(offer => peerConnection.setLocalDescription(offer))
+        .then(() => {
+            sendSignalMessage(websocket, 'offer', { sdp: peerConnection.localDescription, to: toUserId });
+        });
+}
+
+function handleReceivedOffer(websocket, offer, fromUserId) {
+    const peerConnection = createPeerConnection(fromUserId);
+    peerConnection.setRemoteDescription(new RTCSessionDescription(offer.sdp))
+        .then(() => peerConnection.createAnswer())
+        .then(answer => peerConnection.setLocalDescription(answer))
+        .then(() => {
+            sendSignalMessage(websocket, 'answer', { sdp: peerConnection.localDescription, to: fromUserId });
+        });
+}
+
+function handleReceivedAnswer(answer, fromUserId) {
+    const peerConnection = peerConnections[fromUserId];
+    if (peerConnection) {
+        peerConnection.setRemoteDescription(new RTCSessionDescription(answer.sdp));
+    }
+}
+
+function handleReceivedCandidate(candidate, fromUserId) {
+    const peerConnection = peerConnections[fromUserId];
+    if (peerConnection) {
+        peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
+    }
+}
 
 
 function establishWebSocketConnection(sessionID, host) {
@@ -48,7 +147,19 @@ function establishWebSocketConnection(sessionID, host) {
     websocket.onmessage = function(event) {
         const data = JSON.parse(event.data);
         if (Array.isArray(data)) {
-            updateUsersTable(data);
+            updateUsersTable(data); // handles new users joining the session
+        } else if (typeof data === 'object') {
+            switch (data.Type) {
+                case 'offer':
+                    handleReceivedOffer(websocket, data.Data, data.From);
+                    break;
+                case 'answer':
+                    handleReceivedAnswer(websocket, data.Data, data.From);
+                    break;
+                case 'candidate':
+                    handleReceivedCandidate(websocket, data.Data, data.From);
+                    break;
+            }
         }
     }
 
