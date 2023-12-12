@@ -334,7 +334,7 @@ type SignalMessage struct {
 	Type      string                   `json:"Type"`
 	SessionID string                   `json:"SessionID"`
 	Host      bool                     `json:"Host"`
-	SDP       json.RawMessage          `json:"SDP,omitempty"`
+	SDP       string                   `json:"SDP,omitempty"`
 	Candidate *webrtc.ICECandidateInit `json:"Candidate,omitempty"`
 	To        string                   `json:"To,omitempty"`
 	From      string                   `json:"From,omitempty"`

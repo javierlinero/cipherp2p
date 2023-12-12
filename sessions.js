@@ -113,7 +113,7 @@ function makeOffer(sessionID, host, toUserId) {
         .then(offer => peerConnection.setLocalDescription(offer))
         .then(() => {
             console.log(typeof peerConnection.localDescription);
-            sendSignalMessage(sessionID, host, 'offer', { sdp: peerConnection.localDescription, to: toUserId });
+            sendSignalMessage(sessionID, host, 'offer', { sdp: peerConnection.localDescription.sdp, to: toUserId });
             console.log("Offer sent successfully.");
         });
 }
@@ -124,7 +124,7 @@ function handleReceivedOffer(sessionID, host, SDP, fromUserId) {
         .then(() => peerConnection.createAnswer())
         .then(answer => peerConnection.setLocalDescription(answer))
         .then(() => {
-            sendSignalMessage(sessionID, host, 'answer', { sdp: peerConnection.localDescription, to: fromUserId });
+            sendSignalMessage(sessionID, host, 'answer', { sdp: peerConnection.localDescription.sdp, to: fromUserId });
             console.log("Received offer and sent answer")
         });
 }
