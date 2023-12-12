@@ -40,11 +40,6 @@ let peerConnections = {}; // store multiple peer connections
 const localDataChannels = {};
 
 function sendSignalMessage (websocket, sessionID, host, type, data) {
-    if (!websocket || websocket.readyState !== WebSocket.OPEN) {
-        console.error('WebSocket is not connected or not in OPEN state.');
-        return;
-    }
-
     const message = {
         Type: type,
         SessionID: sessionID, // Make sure this is defined in your scope
