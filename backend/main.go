@@ -11,6 +11,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
+	"github.com/pion/webrtc/v3"
 )
 
 type User struct {
@@ -152,8 +153,10 @@ func JoinSessionRequestHandler(w http.ResponseWriter, r *http.Request) {
 					connections := Sessions.GetConnections(sessionID)
 					allusers := Sessions.GetUsers(sessionID)
 					serialized := UsersToSerialized(allusers)
+
+					wsMessage := UsersMessage{serialized, userID}
 					for _, conn := range connections {
-						err := conn.WriteJSON(serialized)
+						err := conn.WriteJSON(wsMessage)
 						if err != nil {
 							log.Printf("error sending message to connection: %v", err)
 							return
@@ -164,19 +167,17 @@ func JoinSessionRequestHandler(w http.ResponseWriter, r *http.Request) {
 			}
 
 			switch msg.Type {
-			case "offer":
-				//handle webrtc offer
-			case "answer":
-				//handle webrtc answer
-			case "candidate":
-				//handle webrtc ICE candidate
+			case "offer", "answer", "candidate":
+				handleWebRTCSignal(msg, userID)
 			case "joinSession":
 				if msg.Host {
 					// add the user to the session
 					Sessions.UpdateUserHostStatus(msg.SessionID, userID, true)
 					allusers := Sessions.GetUsers(msg.SessionID)
 					serialized := UsersToSerialized(allusers)
-					err := wss.WriteJSON(serialized)
+
+					wsMessage := UsersMessage{serialized, userID}
+					err := wss.WriteJSON(wsMessage)
 					if err != nil {
 						log.Printf("error sending user list: %v", err)
 						return
@@ -185,8 +186,10 @@ func JoinSessionRequestHandler(w http.ResponseWriter, r *http.Request) {
 					connections := Sessions.GetConnections(msg.SessionID)
 					allusers := Sessions.GetUsers(msg.SessionID)
 					serialized := UsersToSerialized(allusers)
+
+					wsMessage := UsersMessage{serialized, userID}
 					for _, conn := range connections {
-						err := conn.WriteJSON(serialized)
+						err := conn.WriteJSON(wsMessage)
 						if err != nil {
 							log.Printf("error sending message to connection: %v", err)
 							return
@@ -216,8 +219,8 @@ func JoinSessionRequestHandler(w http.ResponseWriter, r *http.Request) {
 	}()
 }
 
-func handleWebRTCSignal(msg SignalMessage, sessionID string) {
-	connections := Sessions.GetConnections(sessionID)
+func handleWebRTCSignal(msg SignalMessage, string userID) {
+	connections := Sessions.GetConnections(msg.sessionID)
 	for _, conn := range connections {
 		if conn != nil {
 			// Forward the message to the other peer(s)
@@ -225,6 +228,7 @@ func handleWebRTCSignal(msg SignalMessage, sessionID string) {
 			if msg.To != "" && Sessions.getUserID(conn) != msg.To {
 				continue
 			}
+			msg.From = userID
 			err := conn.WriteJSON(msg)
 			if err != nil {
 				log.Printf("error forwarding WebRTC signal: %v", err)
@@ -324,9 +328,18 @@ func (s *SessionMap) removeUserFromSession(sessionID string, userID string) {
 }
 
 type SignalMessage struct {
-	Type      string // offer, answer, candidate
-	SessionID string // sessionID
-	Host      bool   // host or not
+	Type      string                   `json:"Type"`
+	SessionID string                   `json:"SessionID"`
+	Host      bool                     `json:"Host"`
+	SDP       string                   `json:"SDP,omitempty"`
+	Candidate *webrtc.ICECandidateInit `json:"Candidate,omitempty"`
+	To        string                   `json:"To,omitempty"`
+	From      string                   `json:"From,omitempty"`
+}
+
+type UsersMessage struct {
+	Users  []SerializableUser `json:"Users"`
+	UserID string             `json:"UserID"`
 }
 
 func main() {
