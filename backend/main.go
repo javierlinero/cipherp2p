@@ -219,8 +219,8 @@ func JoinSessionRequestHandler(w http.ResponseWriter, r *http.Request) {
 	}()
 }
 
-func handleWebRTCSignal(msg SignalMessage, string userID) {
-	connections := Sessions.GetConnections(msg.sessionID)
+func handleWebRTCSignal(msg SignalMessage, userID string) {
+	connections := Sessions.GetConnections(msg.SessionID)
 	for _, conn := range connections {
 		if conn != nil {
 			// Forward the message to the other peer(s)
