@@ -205,7 +205,7 @@ func JoinSessionRequestHandler(w http.ResponseWriter, r *http.Request) {
 						log.Printf("error sending message to connection: %v", err)
 						return
 					}
-					Sessions.closeSession(msg.SessionID)
+					delete(Sessions.Map, sessionID)
 				}
 				if msg.Host {
 					// add the user to the session
