@@ -84,8 +84,9 @@ function sendSignalMessage (sessionID, host, type, data) {
         SessionID: sessionID, // Make sure this is defined in your scope
         Host: host, // This should be a boolean indicating if the sender is the host
         SDP: null,
-        Candidate: null,
-        To: null
+        Candidate: null, 
+        To: null,
+        From: null
     };
 
     // Add additional fields based on the message type
@@ -100,6 +101,10 @@ function sendSignalMessage (sessionID, host, type, data) {
         message.To = data.to;
     }
 
+    if(data.from) {
+        message.From = data.from
+    }
+
     // Send the message to the signaling server
 
     if (websocket && websocket.readyState === WebSocket.OPEN) {
@@ -109,7 +114,7 @@ function sendSignalMessage (sessionID, host, type, data) {
 }
 
 
-function createPeerConnection(sessionID, host, otherUserId) {
+function createPeerConnection(sessionID, host, toUserId, fromUserId) {
     const peerConnection = new RTCPeerConnection({
         iceServers: [
             { urls: 'stun:stun.services.mozilla.com:3478' },
@@ -123,7 +128,7 @@ function createPeerConnection(sessionID, host, otherUserId) {
     // Handle ICE candidates
     peerConnection.onicecandidate = event => {
         if (event.candidate) {
-            sendSignalMessage(sessionID, host, 'candidate', { candidate: JSON.stringify(event.candidate), to: otherUserId });
+            sendSignalMessage(sessionID, host, 'candidate', { candidate: JSON.stringify(event.candidate), to: toUserId, from: fromUserId });
         }
     };
 
@@ -137,23 +142,23 @@ function createPeerConnection(sessionID, host, otherUserId) {
     return peerConnection;
 }
 
-function makeOffer(sessionID, host, toUserId) {
-    const peerConnection = createPeerConnection(toUserId);
+function makeOffer(sessionID, host, toUserId, fromUserId) {
+    const peerConnection = createPeerConnection(toUserId, fromUserId);
     peerConnection.createOffer()
         .then(offer => peerConnection.setLocalDescription(offer))
         .then(() => {
-            sendSignalMessage(sessionID, host, 'offer', { sdp: JSON.stringify(peerConnection.localDescription), to: toUserId });
+            sendSignalMessage(sessionID, host, 'offer', { sdp: JSON.stringify(peerConnection.localDescription), to: toUserId, from: fromUserId });
             console.log("Offer sent successfully.");
         });
 }
 
-function handleReceivedOffer(sessionID, host, SDP, fromUserId) {
+function handleReceivedOffer(sessionID, host, SDP, fromUserId, toUserId) {
     const peerConnection = createPeerConnection(fromUserId);
     peerConnection.setRemoteDescription(new RTCSessionDescription(JSON.parse(SDP)))
         .then(() => peerConnection.createAnswer())
         .then(answer => peerConnection.setLocalDescription(answer))
         .then(() => {
-            sendSignalMessage(sessionID, host, 'answer', { sdp: JSON.stringify(peerConnection.localDescription), to: fromUserId });
+            sendSignalMessage(sessionID, host, 'answer', { sdp: JSON.stringify(peerConnection.localDescription), to: fromUserId, from: toUserId });
             console.log("Received offer and sent answer")
         });
 }
@@ -199,7 +204,7 @@ function establishWebSocketConnection(sessionID, host) {
         } else {
             switch (data.Type) {
                 case 'offer':
-                    handleReceivedOffer(sessionID, host, data.SDP, data.From);
+                    handleReceivedOffer(sessionID, host, data.SDP, data.From, data.To);
                     break;
                 case 'answer':
                     handleReceivedAnswer(data.SDP, data.From);
@@ -272,7 +277,7 @@ function updateUsersTable(data, sessionID, host) {
         makeOfferArray.forEach(userId => {
             console.log(userId)
             console.log(typeof userId)
-            makeOffer(sessionID, host, userId.ID);
+            makeOffer(sessionID, host, userId.ID, data.UserID); // sessionid, host or not, to userid, from data.UserID
         });
     }
 }

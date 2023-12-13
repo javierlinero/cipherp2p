@@ -230,6 +230,7 @@ func handleWebRTCSignal(msg SignalMessage, userID string) {
 			if msg.To != "" && Sessions.getUserID(conn) != msg.To {
 				continue
 			}
+			msg.To = msg.From
 			msg.From = userID
 			err := conn.WriteJSON(msg)
 			if err != nil {
