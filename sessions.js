@@ -34,7 +34,44 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     establishWebSocketConnection(sessionID, host);
+    const fileInput = document.getElementById('fileInput');
+    fileInput.addEventListener('change', handleFileSelection);
 });
+
+function handleFileSelection(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    readFileAndSend(file);
+}
+
+function readFileAndSend(file) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const data = e.target.result;
+        sendFileData(data);
+    };
+    reader.readAsArrayBuffer(file);
+}
+
+function sendFileData(data) {
+    // Assuming you're sending to the first peer for simplicity
+    const firstPeerUserId = Object.keys(localDataChannels)[0];
+    const dataChannel = localDataChannels[firstPeerUserId];
+    if (dataChannel && dataChannel.readyState === 'open') {
+        dataChannel.send(data);
+    }
+}
+
+// Modify your setupDataChannelEvents to handle receiving file data
+function setupDataChannelEvents(dataChannel) {
+    dataChannel.onopen = () => console.log("Data channel is open");
+    dataChannel.onmessage = event => {
+        console.log("Received file data:", event.data);
+        // Handle file data here (e.g., save to disk, display, etc.)
+    };
+    dataChannel.onclose = () => console.log("Data channel is closed");
+}
 
 let peerConnections = {}; // store multiple peer connections
 const localDataChannels = {};
@@ -98,14 +135,6 @@ function createPeerConnection(sessionID, host, otherUserId) {
 
     peerConnections[otherUserId] = peerConnection;
     return peerConnection;
-}
-
-function setupDataChannelEvents(dataChannel) {
-    dataChannel.onopen = () => console.log("Data channel is open");
-    dataChannel.onmessage = event => {
-        // Handle incoming file data
-    };
-    dataChannel.onclose = () => console.log("Data channel is closed");
 }
 
 function makeOffer(sessionID, host, toUserId) {
