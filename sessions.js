@@ -181,7 +181,7 @@ function sendSignalMessage (sessionID, host, type, data) {
 }
 
 
-function createPeerConnection(sessionID, host, otherUserId, toUserId) {
+function createPeerConnection(sessionID, isInitiator, host, otherUserId, toUserId) {
     var peerConfiguration = {};
 
     (async() => {
@@ -200,11 +200,18 @@ function createPeerConnection(sessionID, host, otherUserId, toUserId) {
         }
     };
 
-    if (!localDataChannels[otherUserId]) {
-        // Create a data channel
+    if (isInitiator) {
+        // This peer is the initiator, so create a data channel
         const dataChannel = peerConnection.createDataChannel("fileChannel");
         localDataChannels[otherUserId] = dataChannel;
         setupDataChannelEvents(dataChannel);
+    } else {
+        // This peer is not the initiator, so listen for the data channel
+        peerConnection.ondatachannel = function(event) {
+            const dataChannel = event.channel;
+            localDataChannels[otherUserId] = dataChannel;
+            setupDataChannelEvents(dataChannel);
+        };
     }
 
 
@@ -214,7 +221,7 @@ function createPeerConnection(sessionID, host, otherUserId, toUserId) {
 
 async function makeOffer(sessionID, host, toUserId, fromUserId) {
     try {
-        const peerConnection = createPeerConnection(sessionID, host, toUserId, fromUserId);
+        const peerConnection = createPeerConnection(sessionID, true, host, toUserId, fromUserId);
         const offer = await peerConnection.createOffer();
         await peerConnection.setLocalDescription(offer);
         sendSignalMessage(sessionID, host, 'offer', { sdp: JSON.stringify(peerConnection.localDescription), to: toUserId, from: fromUserId });
@@ -226,7 +233,7 @@ async function makeOffer(sessionID, host, toUserId, fromUserId) {
 
 async function handleReceivedOffer(sessionID, host, SDP, fromUserId, toUserId) {
     try {
-        const peerConnection = createPeerConnection(sessionID, host, fromUserId, toUserId);
+        const peerConnection = createPeerConnection(sessionID, false, host, fromUserId, toUserId);
         await peerConnection.setRemoteDescription(new RTCSessionDescription(JSON.parse(SDP)));
         const answer = await peerConnection.createAnswer();
         await peerConnection.setLocalDescription(answer);
