@@ -188,23 +188,7 @@ func JoinSessionRequestHandler(w http.ResponseWriter, r *http.Request) {
 				handleWebRTCSignal(msg, userID)
 			case "joinSession":
 				allusers := Sessions.GetUsers(msg.SessionID)
-				log.Println(allusers)
 				if len(allusers) == 1 && msg.Host == false {
-					log.Println("Joining session that doesnt exist.")
-					errorMsg := SignalMessage{
-						Type:      "wrongID",
-						SessionID: msg.SessionID,
-						Host:      false,
-						SDP:       nil,
-						Candidate: nil,
-						To:        userID,
-						From:      userID,
-					}
-					err := wss.WriteJSON(errorMsg)
-					if err != nil {
-						log.Printf("error sending message to connection: %v", err)
-						return
-					}
 					Sessions.closeSession(sessionID)
 				}
 				if msg.Host {
