@@ -77,6 +77,7 @@ let peerConnections = {}; // store multiple peer connections
 const localDataChannels = {};
 var loggedInUser = null;
 var websocket
+var sentOffer = false;
 
 function sendSignalMessage (sessionID, host, type, data) {
     const message = {
@@ -285,9 +286,10 @@ function updateUsersTable(data, sessionID, host) {
             
             checkboxDiv.appendChild(checkbox); // Append the checkbox to the div
             checkBoxCell.appendChild(checkboxDiv); // Append the div to the cell
-            if (!host) {
+            if (!host && sentOffer === false) {
                 console.log(user.ID)
                 makeOffer(sessionID, host, user.ID, data.UserID); // sessionid, host or
+                sentOffer = true;
             }
         } else {
             row.insertCell();
