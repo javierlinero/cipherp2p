@@ -143,7 +143,7 @@ function createPeerConnection(sessionID, host, otherUserId, toUserId) {
 }
 
 function makeOffer(sessionID, host, toUserId, fromUserId) {
-    const peerConnection = createPeerConnection(toUserId, fromUserId);
+    const peerConnection = createPeerConnection(sessionID, host, toUserId, fromUserId);
     peerConnection.createOffer()
         .then(offer => peerConnection.setLocalDescription(offer))
         .then(() => {
@@ -153,7 +153,7 @@ function makeOffer(sessionID, host, toUserId, fromUserId) {
 }
 
 function handleReceivedOffer(sessionID, host, SDP, fromUserId, toUserId) {
-    const peerConnection = createPeerConnection(fromUserId, toUserId);
+    const peerConnection = createPeerConnection(sessionID, host, fromUserId, toUserId);
     peerConnection.setRemoteDescription(new RTCSessionDescription(JSON.parse(SDP)))
         .then(() => peerConnection.createAnswer())
         .then(answer => peerConnection.setLocalDescription(answer))
