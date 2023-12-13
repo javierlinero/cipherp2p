@@ -191,7 +191,6 @@ func JoinSessionRequestHandler(w http.ResponseWriter, r *http.Request) {
 				log.Println(allusers)
 				if len(allusers) == 1 {
 					log.Println("Joining session that doesnt exist.")
-					Sessions.closeSession(msg.SessionID)
 					errorMsg := SignalMessage{
 						Type:      "wrongID",
 						SessionID: msg.SessionID,
@@ -206,6 +205,7 @@ func JoinSessionRequestHandler(w http.ResponseWriter, r *http.Request) {
 						log.Printf("error sending message to connection: %v", err)
 						return
 					}
+					Sessions.closeSession(msg.SessionID)
 				}
 				if msg.Host {
 					// add the user to the session
