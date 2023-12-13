@@ -38,14 +38,6 @@ document.addEventListener('DOMContentLoaded', function() {
     // Attach the event listener to the file input for file selection
     const fileInput = document.getElementById('fileInput');
 
-    const file = fileInput.files[0];
-    if (!file) {
-        alert("Please select a file first.");
-        return;
-    }
-
-    // Log to check the file type and size
-    console.log("Selected file:", file.name, "Type:", file.type, "Size:", file.size);
     // Attach the event listener to the "Send" button for sending the file
     const sendFileButton = document.getElementById('sendFileButton');
     const fileNameDisplay = document.getElementById('fileNameDisplay');
@@ -53,6 +45,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
     fileInput.addEventListener('change', function(event) {
         const file = event.target.files[0];
+        // Log to check the file type and size
+        console.log("Selected file:", file.name, "Type:", file.type, "Size:", file.size);
         if (file) {
 
             // Update the UI to show the selected file name
