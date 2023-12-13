@@ -102,9 +102,7 @@ function sendFileDataToUser(dataChannel, file) {
     sendFileMetadata(dataChannel, file); // Send the file metadata first
 
     dataChannel.bufferedAmountLowThreshold = 1024 * 1024; // Set low threshold to 1MB
-
     const chunkSize = 16384; // Define the size of each chunk (e.g., 16 KB)
-    let offset = 0; // Start offset
 
     function readSlice(o) {
         if (dataChannel.bufferedAmount > dataChannel.bufferedAmountLowThreshold) {
@@ -118,6 +116,7 @@ function sendFileDataToUser(dataChannel, file) {
 
         reader.onload = (e) => {
             dataChannel.send(e.target.result);
+            currentOffset = sliceEnd; // Update the global offset variable
             if (sliceEnd < file.size) {
                 readSlice(sliceEnd); // Read the next slice
             }
@@ -130,14 +129,14 @@ function sendFileDataToUser(dataChannel, file) {
         reader.readAsArrayBuffer(slice);
     }
 
-    readSlice(offset); // Start reading the first slice
+    currentOffset = 0; // Reset offset to 0 before starting
+    readSlice(currentOffset); // Start reading the first slice
 
     dataChannel.onbufferedamountlow = () => {
         console.log('Buffered amount low, can send more data');
-        readSlice(offset); // Try sending the next slice
+        readSlice(currentOffset); // Try sending from the current offset
     };
 }
-
 
 
 // Modify your setupDataChannelEvents to handle receiving file data
@@ -229,6 +228,7 @@ let receivedSize = 0;
 let metadataReceived = false;
 let fileMetadata = null;
 let peerConnections = {}; // store multiple peer connections
+let currentOffset = 0;
 const localDataChannels = {};
 var loggedInUser = null;
 var websocket
