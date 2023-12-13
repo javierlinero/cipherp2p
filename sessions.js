@@ -34,32 +34,69 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     establishWebSocketConnection(sessionID, host);
-    // const fileInput = document.getElementById('fileInput');
-    // fileInput.addEventListener('change', handleFileSelection);
+
+    // Attach the event listener to the file input for file selection
+    const fileInput = document.getElementById('fileInput');
+
+    // Attach the event listener to the "Send" button for sending the file
+    const sendFileButton = document.getElementById('sendFileButton');
+    sendFileButton.disabled = true;
+
+    fileInput.addEventListener('change', handleFileSelection);
+    sendFileButton.addEventListener('click', sendFilesToCheckedUsers);
 });
+
+function sendFilesToCheckedUsers() {
+    // Get the selected file from the file input
+    const fileInput = document.getElementById('fileInput');
+    const file = fileInput.files[0];
+    if (!file) {
+        alert("Please select a file first.");
+        return;
+    }
+
+    // Grab all the checkboxes that are checked
+    const checkboxes = document.querySelectorAll('input[name="userCheckbox"]:checked');
+
+    // Call the sendFileToUser function for each checked user
+    checkboxes.forEach(checkbox => {
+        const userId = checkbox.value;
+        sendFileToUser(file, userId);
+    });
+}
 
 function handleFileSelection(event) {
     const file = event.target.files[0];
-    if (!file) return;
+    if (!file) {
+        console.log('No file selected.');
+        return;
+    }
 
-    readFileAndSend(file);
+    // Update the UI to show the selected file name
+    const fileNameDisplay = document.getElementById('fileNameDisplay');
+    fileNameDisplay.textContent = `File selected: ${file.name}`;
+    fileNameDisplay.style.display = 'block';
+
+    // Enable the "Send" button only if a file is selected
+    const sendFileButton = document.getElementById('sendFileButton');
+    sendFileButton.disabled = false;
 }
 
-function readFileAndSend(file) {
+function sendFileToUser(file, userId) {
     const reader = new FileReader();
     reader.onload = function(e) {
         const data = e.target.result;
-        sendFileData(data);
+        sendFileDataToUser(data, userId);
     };
     reader.readAsArrayBuffer(file);
 }
 
-function sendFileData(data) {
-    // Assuming you're sending to the first peer for simplicity
-    const firstPeerUserId = Object.keys(localDataChannels)[0];
-    const dataChannel = localDataChannels[firstPeerUserId];
+function sendFileDataToUser(data, userId) {
+    const dataChannel = localDataChannels[userId];
     if (dataChannel && dataChannel.readyState === 'open') {
         dataChannel.send(data);
+    } else {
+        console.error('Data channel is not open for user:', userId);
     }
 }
 

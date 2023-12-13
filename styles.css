@@ -5,7 +5,7 @@ body {
     background-color: #f4f4f4;
     color: #333;
     width: 600px; /* Increased width */
-    height: 350px; /* Increased height */
+    height: 400px; /* Increased height */
     display: flex;
     justify-content: center;
     align-items: center;
@@ -24,6 +24,8 @@ body {
 #container {
     width: 100%; /* Adjusted to take full width of the body */
     max-width: 600px; /* Increased max-width */
+    height: 100%; /* Adjusted to take full width of the body */
+    max-height: 400px; /* Increased max-width */
     background: #fff;
     padding: 20px;
     border-radius: 8px;
