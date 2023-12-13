@@ -214,6 +214,10 @@ function establishWebSocketConnection(sessionID, host) {
                 case 'candidate':
                     handleReceivedCandidate(data.Candidate, data.From);
                     break;
+                case 'wrongID':
+                    console.log('Wrong ID');
+                    window.location.href = 'wrongID.html';
+                    break;
             }
         }
     }
