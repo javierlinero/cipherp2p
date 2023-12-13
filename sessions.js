@@ -204,6 +204,7 @@ function sendFileMetadata(dataChannel, file) {
             dataChannel.send(message);
         }
     } else {
+        // unable to send message
         console.error("Data channel is not open. Unable to send message.");
     }
 }
