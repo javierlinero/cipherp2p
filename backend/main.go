@@ -116,12 +116,28 @@ func (s *SessionMap) GetConnections(sessionID string) []*websocket.Conn {
 	return connections
 }
 
+func keepAlive(conn *websocket.Conn, timeout time.Duration) {
+	ticker := time.NewTicker(timeout)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-ticker.C:
+			if err := conn.WriteMessage(websocket.PingMessage, nil); err != nil {
+				log.Printf("error sending ping: %v", err)
+				return
+			}
+		}
+	}
+}
+
 func JoinSessionRequestHandler(w http.ResponseWriter, r *http.Request) {
 	wss, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Printf("error upgrading connection: %v", err)
 		return
 	}
+	go keepAlive(wss, 30*time.Second)
 
 	sessionID := r.URL.Query().Get("sessionID")
 	if sessionID == "" {
