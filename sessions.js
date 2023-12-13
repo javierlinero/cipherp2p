@@ -77,6 +77,12 @@ function sendFilesToCheckedUsers() {
         alert("Please select a file first.");
         return;
     }
+
+    if (file.size > MAX_FILE_SIZE) {
+        alert("File size exceeds the maximum limit of 10 MB.");
+        return;
+    }
+
     console.log("sendFilestoCheckedUsers: Selected file:", file.name, "Type:", file.type, "Size:", file.size);
     // Grab all the checkboxes that are checked
     const checkboxes = document.querySelectorAll('input[name="userCheckbox"]:checked');
@@ -101,24 +107,21 @@ function sendFileToUser(file, userId) {
 function sendFileDataToUser(dataChannel, file) {
     sendFileMetadata(dataChannel, file); // Send the file metadata first
 
-    dataChannel.bufferedAmountLowThreshold = 1024 * 1024; // Set low threshold to 1MB
+    dataChannel.bufferedAmountLowThreshold = 256 * 1024; // Set low threshold to 1MB
     const chunkSize = 16384; // Define the size of each chunk (e.g., 16 KB)
 
-    function readSlice(o) {
-        if (dataChannel.bufferedAmount > dataChannel.bufferedAmountLowThreshold) {
-            setTimeout(() => readSlice(o), 200); // Wait and try again
-            return;
-        }
-
-        const sliceEnd = Math.min(o + chunkSize, file.size);
-        const slice = file.slice(o, sliceEnd);
+    function readSlice() {
+        const slice = file.slice(currentOffset, currentOffset + chunkSize);
         const reader = new FileReader();
 
         reader.onload = (e) => {
             dataChannel.send(e.target.result);
-            currentOffset = sliceEnd; // Update the global offset variable
-            if (sliceEnd < file.size) {
-                readSlice(sliceEnd); // Read the next slice
+            currentOffset += slice.size; // Update the offset
+            if (currentOffset < file.size) {
+                if (dataChannel.bufferedAmount <= dataChannel.bufferedAmountLowThreshold) {
+                    readSlice(); // Read next slice
+                }
+                // Otherwise, wait for the bufferedAmountLow event
             }
         };
 
@@ -129,12 +132,12 @@ function sendFileDataToUser(dataChannel, file) {
         reader.readAsArrayBuffer(slice);
     }
 
-    currentOffset = 0; // Reset offset to 0 before starting
-    readSlice(currentOffset); // Start reading the first slice
+    readSlice(); // Start reading the first slice
 
     dataChannel.onbufferedamountlow = () => {
-        console.log('Buffered amount low, can send more data');
-        readSlice(currentOffset); // Try sending from the current offset
+        if (currentOffset < file.size) {
+            readSlice(); // Send next slice
+        }
     };
 }
 
@@ -230,6 +233,7 @@ let fileMetadata = null;
 let peerConnections = {}; // store multiple peer connections
 let currentOffset = 0;
 const localDataChannels = {};
+const MAX_FILE_SIZE = 10 * 1024 * 1024; //10 MB
 var loggedInUser = null;
 var websocket
 var sentOffer = false;
