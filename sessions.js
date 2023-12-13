@@ -175,6 +175,7 @@ function setupDataChannelEvents(dataChannel) {
         }
     };
     dataChannel.onclose = () => console.log("Data channel is closed");
+    dataChannel.onerror = () => console.error("Data channel encountered an error");
 }
 
 function downloadBlob(blob, fileName) {
