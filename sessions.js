@@ -110,9 +110,7 @@ function sendFileDataToUser(data, userId) {
 function setupDataChannelEvents(dataChannel) {
     dataChannel.onopen = () => {
         console.log("Data channel is open");
-        if (dataChannel.readyState === 'open') {
-            dataChannel.send('Hello from sender!');
-        }
+        dataChannel.send('Hello from sender!');
     };
     dataChannel.onmessage = event => {
         console.log('received file data:', event.data);
@@ -184,14 +182,15 @@ function sendSignalMessage (sessionID, host, type, data) {
 
 
 function createPeerConnection(sessionID, host, otherUserId, toUserId) {
-    const peerConnection = new RTCPeerConnection({
-        iceServers: [
-            { urls: 'stun:stun.services.mozilla.com:3478' },
-            { urls: 'stun:stun2.l.google.com:19302' },
-            { urls: 'stun:stun3.l.google.com:19302' },
-            { urls: 'stun:stun4.l.google.com:19302' }
-        ]
-    });
+    var peerConfiguration = {};
+
+    (async() => {
+        const response = await fetch("https://cipherp2p.metered.live/api/v1/turn/credentials?apiKey=2f6ed535e91572534639472ac71a467669d2");
+        const iceServers = await response.json();
+        peerConfiguration.iceServers = iceServers
+      })();
+    
+    const peerConnection = new RTCPeerConnection(peerConfiguration);
     console.log('Created local peer connection object')
 
     // Handle ICE candidates
