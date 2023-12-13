@@ -277,18 +277,13 @@ function sendSignalMessage (sessionID, host, type, data) {
 
 
 function createPeerConnection(sessionID, isInitiator, host, otherUserId, toUserId) {
-    var peerConfiguration = { iceServers: [
-        { urls: 'stun:stun.services.mozilla.com:3478' },
-        { urls: 'stun:stun2.l.google.com:19302' },
-        { urls: 'stun:stun3.l.google.com:19302' },
-        { urls: 'stun:stun4.l.google.com:19302' }
-    ]};
+    var peerConfiguration = {};
 
-    //(async() => {
-    //    const response = await fetch("https://cipherp2p.metered.live/api/v1/turn/credentials?apiKey=2f6ed535e91572534639472ac71a467669d2");
-    //    const iceServers = await response.json();
-    //    peerConfiguration.iceServers = iceServers
-    //  })();
+    (async() => {
+        const response = await fetch("https://cipherp2p.metered.live/api/v1/turn/credentials?apiKey=2f6ed535e91572534639472ac71a467669d2");
+        const iceServers = await response.json();
+        peerConfiguration.iceServers = iceServers
+    })();
     
     const peerConnection = new RTCPeerConnection(peerConfiguration);
     console.log('Created local peer connection object')
@@ -297,6 +292,25 @@ function createPeerConnection(sessionID, isInitiator, host, otherUserId, toUserI
     peerConnection.onicecandidate = event => {
         if (event.candidate) {
             sendSignalMessage(sessionID, host, 'candidate', { candidate: JSON.stringify(event.candidate), to: otherUserId, from: toUserId});
+        }
+    };
+
+     // Add event listeners for connection state changes
+    peerConnection.oniceconnectionstatechange = () => {
+        console.log(`ICE connection state change: ${peerConnection.iceConnectionState}`);
+        if (peerConnection.iceConnectionState === 'failed' || peerConnection.iceConnectionState === 'disconnected') {
+            console.log('ICE connection state is failed/disconnected.');
+        }
+    };
+
+    peerConnection.onicegatheringstatechange = () => {
+        console.log(`ICE gathering state change: ${peerConnection.iceGatheringState}`);
+    };
+
+    peerConnection.onconnectionstatechange = () => {
+        console.log(`Connection state change: ${peerConnection.connectionState}`);
+        if (peerConnection.connectionState === 'failed') {
+            console.log('WebRTC connection state is failed.');
         }
     };
 
