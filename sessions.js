@@ -200,11 +200,13 @@ function createPeerConnection(sessionID, host, otherUserId, toUserId) {
         }
     };
 
-    // Create a data channel
-    const dataChannel = peerConnection.createDataChannel("fileChannel");
-    localDataChannels[otherUserId] = dataChannel;
+    if (!localDataChannels[otherUserId]) {
+        // Create a data channel
+        const dataChannel = peerConnection.createDataChannel("fileChannel");
+        localDataChannels[otherUserId] = dataChannel;
+        setupDataChannelEvents(dataChannel);
+    }
 
-    setupDataChannelEvents(dataChannel);
 
     peerConnections[otherUserId] = peerConnection;
     return peerConnection;
