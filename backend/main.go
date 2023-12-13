@@ -189,7 +189,7 @@ func JoinSessionRequestHandler(w http.ResponseWriter, r *http.Request) {
 			case "joinSession":
 				allusers := Sessions.GetUsers(msg.SessionID)
 				log.Println(allusers)
-				if len(allusers) == 1 {
+				if len(allusers) == 1 && msg.Host == false {
 					log.Println("Joining session that doesnt exist.")
 					errorMsg := SignalMessage{
 						Type:      "wrongID",
