@@ -151,7 +151,7 @@ function handleReceivedOffer(sessionID, host, SDP, fromUserId) {
     const peerConnection = createPeerConnection(fromUserId);
     peerConnection.setRemoteDescription(new RTCSessionDescription(JSON.parse(SDP)))
         .then(() => peerConnection.createAnswer())
-        .then(answer => peerConnection.setLocalDescription(JSON.parse(answer)))
+        .then(answer => peerConnection.setLocalDescription(answer))
         .then(() => {
             sendSignalMessage(sessionID, host, 'answer', { sdp: JSON.stringify(peerConnection.localDescription), to: fromUserId });
             console.log("Received offer and sent answer")
