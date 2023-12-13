@@ -186,13 +186,17 @@ func JoinSessionRequestHandler(w http.ResponseWriter, r *http.Request) {
 			case "offer", "answer", "candidate":
 				log.Println("Received signal message: ", msg.Type)
 				handleWebRTCSignal(msg, userID)
-				log.Println("please work")
 			case "joinSession":
 				allusers := Sessions.GetUsers(msg.SessionID)
 				if len(allusers) == 0 {
 					errorMsg := SignalMessage{
 						Type:      "wrongID",
 						SessionID: msg.SessionID,
+						Host:      false,
+						SDP:       nil,
+						Candidate: nil,
+						To:        userID,
+						From:      userID,
 					}
 					err := wss.WriteJSON(errorMsg)
 					if err != nil {
