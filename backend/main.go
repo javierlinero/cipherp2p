@@ -11,7 +11,6 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
-	"github.com/pion/webrtc/v3"
 )
 
 type User struct {
@@ -331,13 +330,13 @@ func (s *SessionMap) removeUserFromSession(sessionID string, userID string) {
 }
 
 type SignalMessage struct {
-	Type      string                   `json:"Type"`
-	SessionID string                   `json:"SessionID"`
-	Host      bool                     `json:"Host"`
-	SDP       string                   `json:"SDP,omitempty"`
-	Candidate *webrtc.ICECandidateInit `json:"Candidate,omitempty"`
-	To        string                   `json:"To,omitempty"`
-	From      string                   `json:"From,omitempty"`
+	Type      string          `json:"Type"`
+	SessionID string          `json:"SessionID"`
+	Host      bool            `json:"Host"`
+	SDP       json.RawMessage `json:"SDP,omitempty"`
+	Candidate json.RawMessage `json:"Candidate,omitempty"`
+	To        string          `json:"To,omitempty"`
+	From      string          `json:"From,omitempty"`
 }
 
 type UsersMessage struct {

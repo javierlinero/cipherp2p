@@ -86,7 +86,7 @@ function createPeerConnection(sessionID, host, otherUserId) {
     // Handle ICE candidates
     peerConnection.onicecandidate = event => {
         if (event.candidate) {
-            sendSignalMessage(sessionID, host, 'candidate', { candidate: event.candidate, to: otherUserId });
+            sendSignalMessage(sessionID, host, 'candidate', { candidate: JSON.stringify(event.candidate), to: otherUserId });
         }
     };
 
@@ -113,18 +113,18 @@ function makeOffer(sessionID, host, toUserId) {
     peerConnection.createOffer()
         .then(offer => peerConnection.setLocalDescription(offer))
         .then(() => {
-            sendSignalMessage(sessionID, host, 'offer', { sdp: peerConnection.localDescription.sdp, to: toUserId });
+            sendSignalMessage(sessionID, host, 'offer', { sdp: JSON.stringify(peerConnection.localDescription), to: toUserId });
             console.log("Offer sent successfully.");
         });
 }
 
 function handleReceivedOffer(sessionID, host, SDP, fromUserId) {
     const peerConnection = createPeerConnection(fromUserId);
-    peerConnection.setRemoteDescription(new RTCSessionDescription(SDP))
+    peerConnection.setRemoteDescription(new RTCSessionDescription(JSON.parse(SDP)))
         .then(() => peerConnection.createAnswer())
-        .then(answer => peerConnection.setLocalDescription(answer))
+        .then(answer => peerConnection.setLocalDescription(JSON.parse(answer)))
         .then(() => {
-            sendSignalMessage(sessionID, host, 'answer', { sdp: peerConnection.localDescription.sdp, to: fromUserId });
+            sendSignalMessage(sessionID, host, 'answer', { sdp: JSON.stringify(peerConnection.localDescription), to: fromUserId });
             console.log("Received offer and sent answer")
         });
 }
@@ -132,7 +132,7 @@ function handleReceivedOffer(sessionID, host, SDP, fromUserId) {
 function handleReceivedAnswer(answer, fromUserId) {
     const peerConnection = peerConnections[fromUserId];
     if (peerConnection) {
-        peerConnection.setRemoteDescription(new RTCSessionDescription(answer.sdp))
+        peerConnection.setRemoteDescription(new RTCSessionDescription(JSON.parse(answer)))
             .then(() => {
                 console.log("Remote description set successfully for answer.");
             })
@@ -145,7 +145,7 @@ function handleReceivedAnswer(answer, fromUserId) {
 function handleReceivedCandidate(candidate, fromUserId) {
     const peerConnection = peerConnections[fromUserId];
     if (peerConnection) {
-        peerConnection.addIceCandidate(new RTCIceCandidate(candidate))
+        peerConnection.addIceCandidate(new RTCIceCandidate(JSON.parse(candidate)))
             .then(() => {
                 console.log("Successfully added ICE candidate.");
             })
