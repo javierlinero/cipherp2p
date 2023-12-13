@@ -134,11 +134,11 @@ function createPeerConnection(sessionID, host, toUserId, fromUserId) {
 
     // Create a data channel
     const dataChannel = peerConnection.createDataChannel("fileChannel");
-    localDataChannels[otherUserId] = dataChannel;
+    localDataChannels[toUserId] = dataChannel;
 
     setupDataChannelEvents(dataChannel);
 
-    peerConnections[otherUserId] = peerConnection;
+    peerConnections[toUserId] = peerConnection;
     return peerConnection;
 }
 
