@@ -104,12 +104,17 @@ function sendFileDataToUser(dataChannel, file) {
 
     // Function to read a slice of the file
     function readSlice(o) {
+        const sliceEnd = Math.min(o + chunkSize, file.size);
+        const slice = file.slice(o, sliceEnd);
+
+        // Debugging: Log the type of 'slice' to verify it's a Blob
+        console.log("Slice type:", slice.constructor.name, "Offset:", o, "End:", sliceEnd);
+
         const reader = new FileReader();
-        const slice = file.slice(o, o + chunkSize);
         reader.onload = (e) => {
             sendDataChannelMessage(dataChannel, e.target.result);
-            if (o + chunkSize < file.size) {
-                readSlice(o + chunkSize); // Read the next slice
+            if (sliceEnd < file.size) {
+                readSlice(sliceEnd); // Read the next slice
             }
         };
         reader.onerror = (error) => {
