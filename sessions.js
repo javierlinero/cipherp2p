@@ -111,10 +111,29 @@ function sendFileDataToUser(data, userId) {
 function setupDataChannelEvents(dataChannel) {
     dataChannel.onopen = () => console.log("Data channel is open");
     dataChannel.onmessage = event => {
-        console.log("Received file data:", event.data);
-        // Handle file data here (e.g., save to disk, display, etc.)
+        if (typeof event.data === 'string') {
+            // Assuming the final message is the file name
+            const fileName = event.data;
+            const blob = new Blob(receivedBuffers);
+            downloadBlob(blob, fileName);
+            receivedBuffers = []; // Reset the buffer after the file is assembled
+        } else {
+            // Add the received chunk to the buffer
+            receivedBuffers.push(event.data);
+        }
     };
     dataChannel.onclose = () => console.log("Data channel is closed");
+}
+
+
+function downloadBlob(blob, fileName) {
+    // Create a link element
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = fileName;
+    document.body.appendChild(link); // Append to the body
+    link.click(); // Trigger the download
+    document.body.removeChild(link); // Clean up
 }
 
 let peerConnections = {}; // store multiple peer connections
