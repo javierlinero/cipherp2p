@@ -97,27 +97,35 @@ function sendFileToUser(file, userId) {
 }
 
 function sendFileDataToUser(dataChannel, file) {
-    sendFileMetadata(dataChannel, file); // Send the metadata first
-  
-    const chunkSize = 16384; // 16KB chunk size
-    const fileReader = new FileReader();
-    let offset = 0;
-  
-    fileReader.onload = (e) => {
-      sendDataChannelMessage(dataChannel, e.target.result);
-      offset += e.target.result.byteLength;
-      if (offset < file.size) {
-        readSlice(offset);
-      }
+    // First, send the file metadata
+    sendFileMetadata(dataChannel, file);
+
+    // Function to read a slice of the file
+    function readSlice(offset) {
+        const slice = file.slice(offset, offset + chunkSize);
+        reader.readAsArrayBuffer(slice);
+    }
+
+    // File Reader to read file slices
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        sendDataChannelMessage(dataChannel, e.target.result);
+        const nextOffset = offset + e.target.result.byteLength;
+        if (nextOffset < file.size) {
+            readSlice(nextOffset);
+        }
     };
-  
-    const readSlice = (o) => {
-      const slice = file.slice(offset, o + chunkSize);
-      fileReader.readAsArrayBuffer(slice);
+
+    // Handle any error in reading the file
+    reader.onerror = (error) => {
+        console.error('Error reading file:', error);
     };
-  
-    readSlice(0);
-  }
+
+    // Start reading the first slice of the file
+    const chunkSize = 16384; // Define the size of each chunk
+    let offset = 0; // Start offset
+    readSlice(offset); // Start reading the first slice
+}
 
 // Modify your setupDataChannelEvents to handle receiving file data
 function setupDataChannelEvents(dataChannel) {
