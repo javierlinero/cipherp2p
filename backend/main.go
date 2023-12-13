@@ -391,7 +391,7 @@ func main() {
 	port := os.Getenv("PORT")
 	http.HandleFunc("/create-room", CreateSessionRequestHandler)
 	http.HandleFunc("/join-room", JoinSessionRequestHandler)
-	http.HandleFunct("get-api-key", GetAPIKeyHandler)
+	http.HandleFunc("get-api-key", GetAPIKeyHandler)
 	log.Println("Starting server on port:" + port)
 	err := http.ListenAndServe(":"+port, nil)
 	if err != nil {
