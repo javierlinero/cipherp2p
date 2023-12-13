@@ -246,6 +246,15 @@ function establishWebSocketConnection(sessionID, host) {
     // delete the session
 }
 
+function removeStringFromArray(data) {
+    const stringToRemove = data.UserID;
+    let array = data.Users;
+
+    array = array.filter(item => item.ID !== stringToRemove);
+
+    return array;
+}
+
 function updateUsersTable(data, sessionID, host) {
     const usersTable = document.getElementById('usersTable');
     // Clear the entire table
@@ -286,14 +295,19 @@ function updateUsersTable(data, sessionID, host) {
             
             checkboxDiv.appendChild(checkbox); // Append the checkbox to the div
             checkBoxCell.appendChild(checkboxDiv); // Append the div to the cell
-            if (!host && sentOffer === false) {
-                console.log(user.ID)
-                makeOffer(sessionID, host, user.ID, data.UserID); // sessionid, host or
-                sentOffer = true;
-            }
+        
         } else {
             row.insertCell();
         }
     });
+
+    if (!host && sentOffer === false) {
+        const makeOfferArray = removeStringFromArray(data);
+        makeOfferArray.forEach(userId => {
+            console.log(userId)
+            console.log(typeof userId)
+            makeOffer(sessionID, host, userId.ID, data.UserID); // sessionid, host or not, to userid, from data.UserID
+        });
+    }
 }
 
