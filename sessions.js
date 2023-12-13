@@ -95,35 +95,29 @@ function sendFileToUser(file, userId) {
     };
     reader.readAsArrayBuffer(file);
 }
-
 function sendFileDataToUser(dataChannel, file) {
-    // First, send the file metadata
+    // Send the file metadata first
     sendFileMetadata(dataChannel, file);
 
+    const chunkSize = 16384; // Define the size of each chunk
+    let offset = 0; // Start offset
+
     // Function to read a slice of the file
-    function readSlice(offset) {
-        const slice = file.slice(offset, offset + chunkSize);
+    function readSlice(o) {
+        const reader = new FileReader();
+        const slice = file.slice(o, o + chunkSize);
+        reader.onload = (e) => {
+            sendDataChannelMessage(dataChannel, e.target.result);
+            if (o + chunkSize < file.size) {
+                readSlice(o + chunkSize); // Read the next slice
+            }
+        };
+        reader.onerror = (error) => {
+            console.error('Error reading file:', error);
+        };
         reader.readAsArrayBuffer(slice);
     }
 
-    // File Reader to read file slices
-    const reader = new FileReader();
-    reader.onload = (e) => {
-        sendDataChannelMessage(dataChannel, e.target.result);
-        const nextOffset = offset + e.target.result.byteLength;
-        if (nextOffset < file.size) {
-            readSlice(nextOffset);
-        }
-    };
-
-    // Handle any error in reading the file
-    reader.onerror = (error) => {
-        console.error('Error reading file:', error);
-    };
-
-    // Start reading the first slice of the file
-    const chunkSize = 16384; // Define the size of each chunk
-    let offset = 0; // Start offset
     readSlice(offset); // Start reading the first slice
 }
 
