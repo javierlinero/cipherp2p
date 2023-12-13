@@ -277,13 +277,18 @@ function sendSignalMessage (sessionID, host, type, data) {
 
 
 function createPeerConnection(sessionID, isInitiator, host, otherUserId, toUserId) {
-    var peerConfiguration = {};
+    var peerConfiguration = { iceServers: [
+        { urls: 'stun:stun.services.mozilla.com:3478' },
+        { urls: 'stun:stun2.l.google.com:19302' },
+        { urls: 'stun:stun3.l.google.com:19302' },
+        { urls: 'stun:stun4.l.google.com:19302' }
+    ]};
 
-    (async() => {
-        const response = await fetch("https://cipherp2p.metered.live/api/v1/turn/credentials?apiKey=2f6ed535e91572534639472ac71a467669d2");
-        const iceServers = await response.json();
-        peerConfiguration.iceServers = iceServers
-      })();
+    //(async() => {
+    //    const response = await fetch("https://cipherp2p.metered.live/api/v1/turn/credentials?apiKey=2f6ed535e91572534639472ac71a467669d2");
+    //    const iceServers = await response.json();
+    //    peerConfiguration.iceServers = iceServers
+    //  })();
     
     const peerConnection = new RTCPeerConnection(peerConfiguration);
     console.log('Created local peer connection object')
