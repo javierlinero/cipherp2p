@@ -34,8 +34,8 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     establishWebSocketConnection(sessionID, host);
-    const fileInput = document.getElementById('fileInput');
-    fileInput.addEventListener('change', handleFileSelection);
+    // const fileInput = document.getElementById('fileInput');
+    // fileInput.addEventListener('change', handleFileSelection);
 });
 
 function handleFileSelection(event) {
