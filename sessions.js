@@ -38,6 +38,14 @@ document.addEventListener('DOMContentLoaded', function() {
     // Attach the event listener to the file input for file selection
     const fileInput = document.getElementById('fileInput');
 
+    const file = fileInput.files[0];
+    if (!file) {
+        alert("Please select a file first.");
+        return;
+    }
+
+    // Log to check the file type and size
+    console.log("Selected file:", file.name, "Type:", file.type, "Size:", file.size);
     // Attach the event listener to the "Send" button for sending the file
     const sendFileButton = document.getElementById('sendFileButton');
     const fileNameDisplay = document.getElementById('fileNameDisplay');
@@ -96,35 +104,34 @@ function sendFileToUser(file, userId) {
     reader.readAsArrayBuffer(file);
 }
 function sendFileDataToUser(dataChannel, file) {
-    // Send the file metadata first
-    sendFileMetadata(dataChannel, file);
+    sendFileMetadata(dataChannel, file); // Send the file metadata first
 
-    const chunkSize = 16384; // Define the size of each chunk
+    const chunkSize = 16384; // Define the size of each chunk (e.g., 16 KB)
     let offset = 0; // Start offset
 
     // Function to read a slice of the file
     function readSlice(o) {
+        const reader = new FileReader();
         const sliceEnd = Math.min(o + chunkSize, file.size);
         const slice = file.slice(o, sliceEnd);
 
-        // Debugging: Log the type of 'slice' to verify it's a Blob
-        console.log("Slice type:", slice.constructor.name, "Offset:", o, "End:", sliceEnd);
-
-        const reader = new FileReader();
         reader.onload = (e) => {
             sendDataChannelMessage(dataChannel, e.target.result);
             if (sliceEnd < file.size) {
                 readSlice(sliceEnd); // Read the next slice
             }
         };
+
         reader.onerror = (error) => {
             console.error('Error reading file:', error);
         };
+
         reader.readAsArrayBuffer(slice);
     }
 
     readSlice(offset); // Start reading the first slice
 }
+
 
 // Modify your setupDataChannelEvents to handle receiving file data
 function setupDataChannelEvents(dataChannel) {
