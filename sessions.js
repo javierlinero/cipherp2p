@@ -75,7 +75,7 @@ function setupDataChannelEvents(dataChannel) {
 
 let peerConnections = {}; // store multiple peer connections
 const localDataChannels = {};
-
+var loggedInUser = null;
 var websocket
 
 function sendSignalMessage (sessionID, host, type, data) {
@@ -202,6 +202,9 @@ function establishWebSocketConnection(sessionID, host) {
     websocket.onmessage = function(event) {
         const data = JSON.parse(event.data);
         if (typeof data === 'object' && Object.keys(data).length === 2) {
+            if (loggedInUser === null) {
+                loggedInUser = data.UserID;
+            }
             updateUsersTable(data, sessionID, host);
         } else {
             switch (data.Type) {
@@ -280,13 +283,15 @@ function updateUsersTable(data, sessionID, host) {
         let roleCell = row.insertCell();
         roleCell.textContent = user.Host ? 'Host' : 'Participant';
 
-        let checkBoxCell = row.insertCell();
-        if (makeOfferArray.includes(user)) {
+        if (user.ID !== loggedInUser) {
+            let checkBoxCell = row.insertCell();
             let checkbox = document.createElement('input');
             checkbox.type = 'checkbox';
             checkbox.value = user.ID;
             checkbox.name = 'userCheckbox';
             checkBoxCell.appendChild(checkbox);
+        } else {
+            row.insertCell();
         }
     });
 
