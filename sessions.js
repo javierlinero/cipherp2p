@@ -46,7 +46,7 @@ document.addEventListener('DOMContentLoaded', function() {
     fileInput.addEventListener('change', function(event) {
         const file = event.target.files[0];
         // Log to check the file type and size
-        console.log("Selected file:", file.name, "Type:", file.type, "Size:", file.size);
+        console.log("EventListener: Selected file:", file.name, "Type:", file.type, "Size:", file.size);
         if (file) {
 
             // Update the UI to show the selected file name
@@ -77,7 +77,7 @@ function sendFilesToCheckedUsers() {
         alert("Please select a file first.");
         return;
     }
-
+    console.log("sendFilestoCheckedUsers: Selected file:", file.name, "Type:", file.type, "Size:", file.size);
     // Grab all the checkboxes that are checked
     const checkboxes = document.querySelectorAll('input[name="userCheckbox"]:checked');
 
@@ -90,6 +90,7 @@ function sendFilesToCheckedUsers() {
 }
 
 function sendFileToUser(file, userId) {
+    console.log("sendFiletoUser: Selected file:", file.name, "Type:", file.type, "Size:", file.size);
     const reader = new FileReader();
     reader.onload = function(e) {
         const data = e.target.result;
