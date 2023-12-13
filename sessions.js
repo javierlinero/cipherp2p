@@ -139,6 +139,7 @@ function downloadBlob(blob, fileName) {
     document.body.removeChild(link); // Clean up
 }
 
+let receivedBuffers = []; // initialized to an empty array
 let peerConnections = {}; // store multiple peer connections
 const localDataChannels = {};
 var loggedInUser = null;
@@ -377,7 +378,7 @@ function updateUsersTable(data, sessionID, host) {
         }
     });
 
-    if (!host && sentOffer === false) {
+    if (!host && !sentOffer) {
         const makeOfferArray = removeStringFromArray(data);
         makeOfferArray.forEach(userId => {
             console.log(userId)
