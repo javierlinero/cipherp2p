@@ -15,7 +15,7 @@ body {
 /* Style for the back button */
 .back {
     position: absolute;
-    top: 10px;
+    top: 30px;
     left: 10px;
     display: inline-block;
     cursor: pointer; /* Optional, if you want the cursor to change to pointer on hover */
@@ -24,8 +24,6 @@ body {
 #container {
     width: 100%; /* Adjusted to take full width of the body */
     max-width: 600px; /* Increased max-width */
-    height: 100%; /* Adjusted to take full width of the body */
-    max-height: 400px; /* Increased max-width */
     background: #fff;
     padding: 20px;
     border-radius: 8px;
@@ -43,6 +41,7 @@ body {
     cursor: pointer;
     margin-top: 10px;
     width: 100%;
+    margin: 5px;
 }
 
 .session-btn:hover {
@@ -78,4 +77,9 @@ body {
 
 .checkbox-container {
     text-align: center; /* Center align the checkbox */
+}
+#file-sharing {
+    display: flex;
+    align-items: center;
+    gap: 10px; /* Adds space between items */
 }

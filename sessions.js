@@ -40,10 +40,30 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Attach the event listener to the "Send" button for sending the file
     const sendFileButton = document.getElementById('sendFileButton');
+
     sendFileButton.disabled = true;
 
-    fileInput.addEventListener('change', handleFileSelection);
+    fileInput.addEventListener('change', function(event) {
+        const file = event.target.files[0];
+        if (file) {
+            // Update the UI to show the selected file name
+            fileNameDisplay.textContent = `File selected: ${file.name}`;
+            fileNameDisplay.style.display = 'block';
+
+            // Enable the "Send" button because a file is selected
+            sendFileButton.disabled = false;
+        } else {
+            // No file is selected, update the UI accordingly
+            fileNameDisplay.textContent = 'No file selected.';
+            fileNameDisplay.style.display = 'block';
+
+            // Keep the "Send" button disabled
+            sendFileButton.disabled = true;
+        }
+    });
+    
     sendFileButton.addEventListener('click', sendFilesToCheckedUsers);
+
 });
 
 function sendFilesToCheckedUsers() {
