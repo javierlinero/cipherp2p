@@ -108,9 +108,14 @@ function sendFileDataToUser(data, userId) {
 
 // Modify your setupDataChannelEvents to handle receiving file data
 function setupDataChannelEvents(dataChannel) {
-    dataChannel.onopen = () => console.log("Data channel is open");
+    dataChannel.onopen = () => {
+        console.log("Data channel is open");
+        if (dataChannel.readyState === 'open') {
+            dataChannel.send('Hello from sender!');
+        }
+    };
     dataChannel.onmessage = event => {
-        console.log('received file data?')
+        console.log('received file data:', event.data);
         if (typeof event.data === 'string') {
             // Assuming the final message is the file name
             const fileName = event.data;
