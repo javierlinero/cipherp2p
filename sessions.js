@@ -114,7 +114,7 @@ function sendSignalMessage (sessionID, host, type, data) {
 }
 
 
-function createPeerConnection(sessionID, host, otherUserId) {
+function createPeerConnection(sessionID, host, otherUserId, toUserId) {
     const peerConnection = new RTCPeerConnection({
         iceServers: [
             { urls: 'stun:stun.services.mozilla.com:3478' },
@@ -128,7 +128,7 @@ function createPeerConnection(sessionID, host, otherUserId) {
     // Handle ICE candidates
     peerConnection.onicecandidate = event => {
         if (event.candidate) {
-            sendSignalMessage(sessionID, host, 'candidate', { candidate: JSON.stringify(event.candidate), to: otherUserId, from: null});
+            sendSignalMessage(sessionID, host, 'candidate', { candidate: JSON.stringify(event.candidate), to: otherUserId, from: toUserId});
         }
     };
 
@@ -143,7 +143,7 @@ function createPeerConnection(sessionID, host, otherUserId) {
 }
 
 function makeOffer(sessionID, host, toUserId, fromUserId) {
-    const peerConnection = createPeerConnection(toUserId);
+    const peerConnection = createPeerConnection(toUserId, fromUserId);
     peerConnection.createOffer()
         .then(offer => peerConnection.setLocalDescription(offer))
         .then(() => {
@@ -153,7 +153,7 @@ function makeOffer(sessionID, host, toUserId, fromUserId) {
 }
 
 function handleReceivedOffer(sessionID, host, SDP, fromUserId, toUserId) {
-    const peerConnection = createPeerConnection(fromUserId);
+    const peerConnection = createPeerConnection(fromUserId, toUserId);
     peerConnection.setRemoteDescription(new RTCSessionDescription(JSON.parse(SDP)))
         .then(() => peerConnection.createAnswer())
         .then(answer => peerConnection.setLocalDescription(answer))
