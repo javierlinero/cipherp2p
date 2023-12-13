@@ -96,38 +96,98 @@ function sendFileToUser(file, userId) {
     reader.readAsArrayBuffer(file);
 }
 
-function sendFileDataToUser(data, userId) {
-    const dataChannel = localDataChannels[userId];
-    if (dataChannel && dataChannel.readyState === 'open') {
-        dataChannel.send(data);
-        console.log('Sent file data to user:', userId);
-    } else {
-        console.error('Data channel is not open for user:', userId);
-    }
-}
+function sendFileDataToUser(dataChannel, file) {
+    sendFileMetadata(dataChannel, file); // Send the metadata first
+  
+    const chunkSize = 16384; // 16KB chunk size
+    const fileReader = new FileReader();
+    let offset = 0;
+  
+    fileReader.onload = (e) => {
+      sendDataChannelMessage(dataChannel, e.target.result);
+      offset += e.target.result.byteLength;
+      if (offset < file.size) {
+        readSlice(offset);
+      }
+    };
+  
+    const readSlice = (o) => {
+      const slice = file.slice(offset, o + chunkSize);
+      fileReader.readAsArrayBuffer(slice);
+    };
+  
+    readSlice(0);
+  }
 
 // Modify your setupDataChannelEvents to handle receiving file data
 function setupDataChannelEvents(dataChannel) {
     dataChannel.onopen = () => {
         console.log("Data channel is open");
-        dataChannel.send('Hello from sender!');
-    };
+        processMessageQueue(dataChannel); // Process any queued messages
+      };
     dataChannel.onmessage = event => {
-        console.log('received file data:', event.data);
-        if (typeof event.data === 'string') {
-            // Assuming the final message is the file name
-            const fileName = event.data;
-            const blob = new Blob(receivedBuffers);
-            downloadBlob(blob, fileName);
-            receivedBuffers = []; // Reset the buffer after the file is assembled
+        if (typeof event.data === 'string' && !metadataReceived) {
+            // The first message should be the metadata
+            fileMetadata = JSON.parse(event.data);
+            metadataReceived = true;
+            fileSize = fileMetadata.size;
+            console.log(`Expecting file: ${fileMetadata.name} with size: ${fileMetadata.size}`);
         } else {
-            // Add the received chunk to the buffer
+            // Here we receive the file data
             receivedBuffers.push(event.data);
+            receivedSize += event.data.byteLength;
+            console.log(`Received chunk: ${event.data.byteLength} bytes, total received: ${receivedSize} bytes`);
+
+            // Check if file is fully received
+            if (receivedSize === fileSize) {
+                const blob = new Blob(receivedBuffers, { type: fileMetadata.type });
+                downloadBlob(blob, fileMetadata.name);
+                // Reset for the next file transfer
+                receivedBuffers = [];
+                fileSize = 0;
+                receivedSize = 0;
+                metadataReceived = false;
+                fileMetadata = null;
+            }
         }
     };
     dataChannel.onclose = () => console.log("Data channel is closed");
 }
 
+function downloadBlob(blob, fileName) {
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = fileName;
+    link.click(); // Trigger the download
+    // Clean up the URL object after the download starts
+    link.addEventListener('click', () => URL.revokeObjectURL(link.href), {once: true});
+}
+
+function sendFileMetadata(dataChannel, file) {
+    const metadata = {
+      name: file.name,
+      size: file.size,
+      type: file.type
+    };
+    sendDataChannelMessage(dataChannel, JSON.stringify(metadata));
+  }
+
+function sendDataChannelMessage(dataChannel, message) {
+    if (dataChannel.readyState === 'open') {
+      dataChannel.send(message);
+    } else {
+      // If the data channel is not open, queue the message
+      messageQueue.push(message);
+    }
+  }
+
+
+function processMessageQueue(dataChannel) {
+    while (messageQueue.length > 0 && dataChannel.readyState === 'open') {
+        const message = messageQueue.shift(); // Remove the first message from the queue
+        dataChannel.send(message);
+    }
+}
 
 function downloadBlob(blob, fileName) {
     // Create a link element
@@ -139,7 +199,12 @@ function downloadBlob(blob, fileName) {
     document.body.removeChild(link); // Clean up
 }
 
+let messageQueue = []; // Queue to store messages that need to be sent when the data channel opens
 let receivedBuffers = []; // initialized to an empty array
+let fileSize = 0;
+let receivedSize = 0;
+let metadataReceived = false;
+let fileMetadata = null;
 let peerConnections = {}; // store multiple peer connections
 const localDataChannels = {};
 var loggedInUser = null;
