@@ -188,6 +188,7 @@ func JoinSessionRequestHandler(w http.ResponseWriter, r *http.Request) {
 				handleWebRTCSignal(msg, userID)
 			case "joinSession":
 				allusers := Sessions.GetUsers(msg.SessionID)
+				log.Println(allusers)
 				if len(allusers) == 0 {
 					errorMsg := SignalMessage{
 						Type:      "wrongID",
