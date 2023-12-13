@@ -259,11 +259,17 @@ function updateUsersTable(data, sessionID, host) {
     let headerRow = usersTable.insertRow();
     let idHeaderCell = headerRow.insertCell();
     idHeaderCell.textContent = 'User ID';
-    idHeaderCell.style.fontWeight = 'bold'; // Optional, for styling the header
+    idHeaderCell.style.fontWeight = 'bold';
 
     let roleHeaderCell = headerRow.insertCell();
     roleHeaderCell.textContent = 'Role';
-    roleHeaderCell.style.fontWeight = 'bold'; // Optional, for styling the header
+    roleHeaderCell.style.fontWeight = 'bold'; 
+
+    let checkBoxHeaderCell = headerRow.insertCell();
+    checkBoxHeaderCell.textContent = 'Send Files';
+    checkBoxHeaderCell.style.fontWeight = 'bold'; 
+
+    const makeOfferArray = removeStringFromArray(data);
 
     data.Users.forEach(user => {
         let row = usersTable.insertRow();
@@ -273,9 +279,18 @@ function updateUsersTable(data, sessionID, host) {
 
         let roleCell = row.insertCell();
         roleCell.textContent = user.Host ? 'Host' : 'Participant';
+
+        let checkBoxCell = row.insertCell();
+        if (makeOfferArray.includes(user.ID)) {
+            let checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.value = user.ID;
+            checkbox.name = 'userCheckbox';
+            checkBoxCell.appendChild(checkbox);
+        }
     });
+
     if (!host) {
-        const makeOfferArray = removeStringFromArray(data);
         makeOfferArray.forEach(userId => {
             console.log(userId)
             console.log(typeof userId)
