@@ -66,7 +66,7 @@ function sendSignalMessage (sessionID, host, type, data) {
     // Send the message to the signaling server
 
     if (websocket && websocket.readyState === WebSocket.OPEN) {
-        console.log(message);
+        console.log(message.To);
         websocket.send(JSON.stringify(message));
     }
 }
@@ -242,6 +242,7 @@ function updateUsersTable(data, sessionID, host) {
         const makeOfferArray = removeStringFromArray(data);
         makeOfferArray.forEach(userId => {
             console.log(userId)
+            console.log(typeof userId)
             makeOffer(sessionID, host, userId);
         });
     }
