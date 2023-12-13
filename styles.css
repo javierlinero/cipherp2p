@@ -73,3 +73,7 @@ body {
     color: #888; /* Example color for placeholder text */
     /* Add any additional styling for placeholder text here */
 }
+
+.checkbox-container {
+    text-align: center; /* Center align the checkbox */
+}

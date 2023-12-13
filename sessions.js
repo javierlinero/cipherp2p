@@ -245,15 +245,6 @@ function establishWebSocketConnection(sessionID, host) {
     // delete the session
 }
 
-function removeStringFromArray(data) {
-    const stringToRemove = data.UserID;
-    let array = data.Users;
-
-    array = array.filter(item => item.ID !== stringToRemove);
-
-    return array;
-}
-
 function updateUsersTable(data, sessionID, host) {
     const usersTable = document.getElementById('usersTable');
     // Clear the entire table
@@ -272,7 +263,6 @@ function updateUsersTable(data, sessionID, host) {
     checkBoxHeaderCell.textContent = 'Send Files';
     checkBoxHeaderCell.style.fontWeight = 'bold'; 
 
-    const makeOfferArray = removeStringFromArray(data);
 
     data.Users.forEach(user => {
         let row = usersTable.insertRow();
@@ -285,22 +275,23 @@ function updateUsersTable(data, sessionID, host) {
 
         if (user.ID !== loggedInUser) {
             let checkBoxCell = row.insertCell();
+            let checkboxDiv = document.createElement('div'); // Create a div to wrap the checkbox
+            checkboxDiv.classList.add('checkbox-container'); // Add a class for styling
+            
             let checkbox = document.createElement('input');
             checkbox.type = 'checkbox';
             checkbox.value = user.ID;
             checkbox.name = 'userCheckbox';
-            checkBoxCell.appendChild(checkbox);
+            
+            checkboxDiv.appendChild(checkbox); // Append the checkbox to the div
+            checkBoxCell.appendChild(checkboxDiv); // Append the div to the cell
+            if (!host) {
+                console.log(user.ID)
+                makeOffer(sessionID, host, user.ID, data.UserID); // sessionid, host or
+            }
         } else {
             row.insertCell();
         }
     });
-
-    if (!host) {
-        makeOfferArray.forEach(userId => {
-            console.log(userId)
-            console.log(typeof userId)
-            makeOffer(sessionID, host, userId.ID, data.UserID); // sessionid, host or not, to userid, from data.UserID
-        });
-    }
 }
 
