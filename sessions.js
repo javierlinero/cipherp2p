@@ -101,17 +101,23 @@ function sendFileToUser(file, userId) {
 function sendFileDataToUser(dataChannel, file) {
     sendFileMetadata(dataChannel, file); // Send the file metadata first
 
+    dataChannel.bufferedAmountLowThreshold = 1024 * 1024; // Set low threshold to 1MB
+
     const chunkSize = 16384; // Define the size of each chunk (e.g., 16 KB)
     let offset = 0; // Start offset
 
-    // Function to read a slice of the file
     function readSlice(o) {
-        const reader = new FileReader();
+        if (dataChannel.bufferedAmount > dataChannel.bufferedAmountLowThreshold) {
+            setTimeout(() => readSlice(o), 200); // Wait and try again
+            return;
+        }
+
         const sliceEnd = Math.min(o + chunkSize, file.size);
         const slice = file.slice(o, sliceEnd);
+        const reader = new FileReader();
 
         reader.onload = (e) => {
-            sendDataChannelMessage(dataChannel, e.target.result);
+            dataChannel.send(e.target.result);
             if (sliceEnd < file.size) {
                 readSlice(sliceEnd); // Read the next slice
             }
@@ -125,7 +131,13 @@ function sendFileDataToUser(dataChannel, file) {
     }
 
     readSlice(offset); // Start reading the first slice
+
+    dataChannel.onbufferedamountlow = () => {
+        console.log('Buffered amount low, can send more data');
+        readSlice(offset); // Try sending the next slice
+    };
 }
+
 
 
 // Modify your setupDataChannelEvents to handle receiving file data
@@ -181,15 +193,17 @@ function sendFileMetadata(dataChannel, file) {
     sendDataChannelMessage(dataChannel, JSON.stringify(metadata));
   }
 
-function sendDataChannelMessage(dataChannel, message) {
+  function sendDataChannelMessage(dataChannel, message) {
     if (dataChannel.readyState === 'open') {
-      dataChannel.send(message);
+        if (dataChannel.bufferedAmount > 16 * 1024 * 1024) { // Check if buffered amount is greater than a threshold, e.g., 16 MB
+            setTimeout(() => sendDataChannelMessage(dataChannel, message), 200); // Wait for 200 ms before trying to send again
+        } else {
+            dataChannel.send(message);
+        }
     } else {
-      // If the data channel is not open, queue the message
-      messageQueue.push(message);
+        console.error("Data channel is not open. Unable to send message.");
     }
-  }
-
+}
 
 function processMessageQueue(dataChannel) {
     while (messageQueue.length > 0 && dataChannel.readyState === 'open') {
