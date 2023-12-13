@@ -243,7 +243,7 @@ function updateUsersTable(data, sessionID, host) {
         makeOfferArray.forEach(userId => {
             console.log(userId)
             console.log(typeof userId)
-            makeOffer(sessionID, host, userId);
+            makeOffer(sessionID, host, userId.ID);
         });
     }
 }
