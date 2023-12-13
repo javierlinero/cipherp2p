@@ -364,6 +364,13 @@ func (s *SessionMap) removeUserFromSession(sessionID string, userID string) {
 	// User not found in the session
 }
 
+func GetAPIKeyHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Content-Type", "application/json")
+	apiKey := os.Getenv("TURN_API_KEY")
+	json.NewEncoder(w).Encode(apiKey)
+}
+
 type SignalMessage struct {
 	Type      string          `json:"Type"`
 	SessionID string          `json:"SessionID"`
@@ -384,6 +391,7 @@ func main() {
 	port := os.Getenv("PORT")
 	http.HandleFunc("/create-room", CreateSessionRequestHandler)
 	http.HandleFunc("/join-room", JoinSessionRequestHandler)
+	http.HandleFunct("get-api-key", GetAPIKeyHandler)
 	log.Println("Starting server on port:" + port)
 	err := http.ListenAndServe(":"+port, nil)
 	if err != nil {
