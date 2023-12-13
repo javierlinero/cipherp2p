@@ -91,12 +91,12 @@ function sendFilesToCheckedUsers() {
 
 function sendFileToUser(file, userId) {
     console.log("sendFiletoUser: Selected file:", file.name, "Type:", file.type, "Size:", file.size);
-    const reader = new FileReader();
-    reader.onload = function(e) {
-        const data = e.target.result;
-        sendFileDataToUser(data, userId);
-    };
-    reader.readAsArrayBuffer(file);
+    const dataChannel = localDataChannels[userId];
+    if (dataChannel && dataChannel.readyState === 'open') {
+        sendFileDataToUser(dataChannel, file);
+    } else {
+        console.error('Data channel not open or not found for user:', userId);
+    }
 }
 function sendFileDataToUser(dataChannel, file) {
     sendFileMetadata(dataChannel, file); // Send the file metadata first
