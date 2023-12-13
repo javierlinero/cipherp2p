@@ -281,7 +281,7 @@ function updateUsersTable(data, sessionID, host) {
         roleCell.textContent = user.Host ? 'Host' : 'Participant';
 
         let checkBoxCell = row.insertCell();
-        if (makeOfferArray.includes(user.ID)) {
+        if (makeOfferArray.includes(user)) {
             let checkbox = document.createElement('input');
             checkbox.type = 'checkbox';
             checkbox.value = user.ID;
