@@ -142,50 +142,52 @@ function createPeerConnection(sessionID, host, otherUserId, toUserId) {
     return peerConnection;
 }
 
-function makeOffer(sessionID, host, toUserId, fromUserId) {
-    const peerConnection = createPeerConnection(sessionID, host, toUserId, fromUserId);
-    peerConnection.createOffer()
-        .then(offer => peerConnection.setLocalDescription(offer))
-        .then(() => {
-            sendSignalMessage(sessionID, host, 'offer', { sdp: JSON.stringify(peerConnection.localDescription), to: toUserId, from: fromUserId });
-            console.log("Offer sent successfully.");
-        });
-}
-
-function handleReceivedOffer(sessionID, host, SDP, fromUserId, toUserId) {
-    const peerConnection = createPeerConnection(sessionID, host, fromUserId, toUserId);
-    peerConnection.setRemoteDescription(new RTCSessionDescription(JSON.parse(SDP)))
-        .then(() => peerConnection.createAnswer())
-        .then(answer => peerConnection.setLocalDescription(answer))
-        .then(() => {
-            sendSignalMessage(sessionID, host, 'answer', { sdp: JSON.stringify(peerConnection.localDescription), to: fromUserId, from: toUserId });
-            console.log("Received offer and sent answer")
-        });
-}
-
-function handleReceivedAnswer(answer, fromUserId) {
-    const peerConnection = peerConnections[fromUserId];
-    if (peerConnection) {
-        peerConnection.setRemoteDescription(new RTCSessionDescription(JSON.parse(answer)))
-            .then(() => {
-                console.log("Remote description set successfully for answer.");
-            })
-            .catch(error => {
-                console.error("Error setting remote description: ", error);
-            });
+async function makeOffer(sessionID, host, toUserId, fromUserId) {
+    try {
+        const peerConnection = createPeerConnection(sessionID, host, toUserId, fromUserId);
+        const offer = await peerConnection.createOffer();
+        await peerConnection.setLocalDescription(offer);
+        sendSignalMessage(sessionID, host, 'offer', { sdp: JSON.stringify(peerConnection.localDescription), to: toUserId, from: fromUserId });
+        console.log("Offer sent successfully to user:", toUserId);
+    } catch (error) {
+        console.error("Error in makeOffer:", error);
     }
 }
 
-function handleReceivedCandidate(candidate, fromUserId) {
+async function handleReceivedOffer(sessionID, host, SDP, fromUserId, toUserId) {
+    try {
+        const peerConnection = createPeerConnection(sessionID, host, fromUserId, toUserId);
+        await peerConnection.setRemoteDescription(new RTCSessionDescription(JSON.parse(SDP)));
+        const answer = await peerConnection.createAnswer();
+        await peerConnection.setLocalDescription(answer);
+        sendSignalMessage(sessionID, host, 'answer', { sdp: JSON.stringify(peerConnection.localDescription), to: fromUserId, from: toUserId });
+        console.log("Received offer from user:", fromUserId, "and sent answer");
+    } catch (error) {
+        console.error("Error in handleReceivedOffer:", error);
+    }
+}
+
+async function handleReceivedAnswer(answer, fromUserId) {
     const peerConnection = peerConnections[fromUserId];
     if (peerConnection) {
-        peerConnection.addIceCandidate(new RTCIceCandidate(JSON.parse(candidate)))
-            .then(() => {
-                console.log("Successfully added ICE candidate.");
-            })
-            .catch(error => {
-                console.error("Error adding ICE candidate: ", error);
-            });
+        try {
+            await peerConnection.setRemoteDescription(new RTCSessionDescription(JSON.parse(answer)));
+            console.log("Remote description set successfully for answer from user:", fromUserId);
+        } catch (error) {
+            console.error("Error setting remote description for answer:", error);
+        }
+    }
+}
+
+async function handleReceivedCandidate(candidate, fromUserId) {
+    const peerConnection = peerConnections[fromUserId];
+    if (peerConnection) {
+        try {
+            await peerConnection.addIceCandidate(new RTCIceCandidate(JSON.parse(candidate)));
+            console.log("Successfully added ICE candidate from user:", fromUserId);
+        } catch (error) {
+            console.error("Error adding ICE candidate:", error);
+        }
     }
 }
 
