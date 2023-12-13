@@ -82,11 +82,10 @@ function sendFilesToCheckedUsers() {
     // Call the sendFileToUser function for each checked user
     checkboxes.forEach(checkbox => {
         const userId = checkbox.value;
+        console.log('Sending file to user:', userId);
         sendFileToUser(file, userId);
     });
 }
-
-
 
 function sendFileToUser(file, userId) {
     const reader = new FileReader();
