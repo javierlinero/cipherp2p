@@ -114,7 +114,7 @@ function sendSignalMessage (sessionID, host, type, data) {
 }
 
 
-function createPeerConnection(sessionID, host, toUserId, fromUserId) {
+function createPeerConnection(sessionID, host, otherUserId) {
     const peerConnection = new RTCPeerConnection({
         iceServers: [
             { urls: 'stun:stun.services.mozilla.com:3478' },
@@ -128,22 +128,22 @@ function createPeerConnection(sessionID, host, toUserId, fromUserId) {
     // Handle ICE candidates
     peerConnection.onicecandidate = event => {
         if (event.candidate) {
-            sendSignalMessage(sessionID, host, 'candidate', { candidate: JSON.stringify(event.candidate), to: toUserId, from: fromUserId });
+            sendSignalMessage(sessionID, host, 'candidate', { candidate: JSON.stringify(event.candidate), to: otherUserId});
         }
     };
 
     // Create a data channel
     const dataChannel = peerConnection.createDataChannel("fileChannel");
-    localDataChannels[toUserId] = dataChannel;
+    localDataChannels[otherUserId] = dataChannel;
 
     setupDataChannelEvents(dataChannel);
 
-    peerConnections[toUserId] = peerConnection;
+    peerConnections[otherUserId] = peerConnection;
     return peerConnection;
 }
 
 function makeOffer(sessionID, host, toUserId, fromUserId) {
-    const peerConnection = createPeerConnection(toUserId, fromUserId);
+    const peerConnection = createPeerConnection(toUserId);
     peerConnection.createOffer()
         .then(offer => peerConnection.setLocalDescription(offer))
         .then(() => {
