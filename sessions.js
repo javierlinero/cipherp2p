@@ -128,7 +128,7 @@ function createPeerConnection(sessionID, host, otherUserId) {
     // Handle ICE candidates
     peerConnection.onicecandidate = event => {
         if (event.candidate) {
-            sendSignalMessage(sessionID, host, 'candidate', { candidate: JSON.stringify(event.candidate), to: otherUserId});
+            sendSignalMessage(sessionID, host, 'candidate', { candidate: JSON.stringify(event.candidate), to: otherUserId, from: null});
         }
     };
 
