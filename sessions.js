@@ -101,6 +101,7 @@ function sendFileDataToUser(data, userId) {
     const dataChannel = localDataChannels[userId];
     if (dataChannel && dataChannel.readyState === 'open') {
         dataChannel.send(data);
+        console.log('Sent file data to user:', userId);
     } else {
         console.error('Data channel is not open for user:', userId);
     }
