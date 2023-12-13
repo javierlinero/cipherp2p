@@ -107,7 +107,7 @@ function sendFileToUser(file, userId) {
 function sendFileDataToUser(dataChannel, file) {
     sendFileMetadata(dataChannel, file); // Send the file metadata first
 
-    dataChannel.bufferedAmountLowThreshold = 256 * 1024; // Set low threshold to 1MB
+    dataChannel.bufferedAmountLowThreshold = 1024 * 1024; // Set low threshold to 1MB
     const chunkSize = 16384; // Define the size of each chunk (e.g., 16 KB)
 
     function readSlice() {
