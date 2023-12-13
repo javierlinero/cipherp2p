@@ -79,7 +79,7 @@ function sendFilesToCheckedUsers() {
     }
 
     if (file.size > MAX_FILE_SIZE) {
-        alert("File size exceeds the maximum limit of 10 MB.");
+        alert("File size exceeds the maximum limit of 25 MB.");
         return;
     }
 
@@ -235,7 +235,7 @@ let fileMetadata = null;
 let peerConnections = {}; // store multiple peer connections
 let currentOffset = 0;
 const localDataChannels = {};
-const MAX_FILE_SIZE = 10 * 1024 * 1024; //10 MB
+const MAX_FILE_SIZE = 25 * 1024 * 1024; //25 MB
 var loggedInUser = null;
 var websocket
 var sentOffer = false;
@@ -384,15 +384,29 @@ async function handleReceivedCandidate(candidate, fromUserId) {
 
 
 function establishWebSocketConnection(sessionID, host) {
-    websocket = new WebSocket(`wss://damp-brushlands-64193-d1cbfc7ae5d4.herokuapp.com/join-room?sessionID=${sessionID}`);
+    websocket = new WebSocket(`wss://damp-brushlands-64193-d1cbfc7ae5d4.herokuapp.com/join-room?sessionID=${sessionID}&host=${host}`);
 
     websocket.onopen = function() {
         websocket.send(JSON.stringify({ Type: 'joinSession', SessionID: sessionID, Host: host, SDP: null, Candidate: null, To: null, From: null }));
     }
 
     websocket.onmessage = function(event) {
-        const data = JSON.parse(event.data);
-        if (typeof data === 'object' && Object.keys(data).length === 2) {
+        let data;
+        try {
+            data = JSON.parse(event.data)
+        } catch (error) {
+            data = event.data;
+        }
+
+        if (typeof data === 'string') {
+            if (data === "Session is full") {
+                console.log("Cannot join: The session is full.");
+                window.location.href = 'full.html'
+            } else if (data === "Session does not exist") {
+                console.log("Cannot join: The session does not exist.");
+                window.location.href = 'dne.html'
+            }
+        } else if (typeof data === 'object' && Object.keys(data).length === 2) {
             if (loggedInUser === null) {
                 loggedInUser = data.UserID;
             }
