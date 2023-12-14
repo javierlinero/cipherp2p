@@ -112,7 +112,7 @@ function sendFileToUser(file, userId, callback) {
 
     if (currentOffset >= file.size) {
         if(typeof callback === 'function') {
-            callback();
+            callback;
         }
     }
 }
