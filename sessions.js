@@ -163,11 +163,14 @@ function setupDataChannelEvents(dataChannel) {
       };
     dataChannel.onmessage = event => {
         if (typeof event.data === 'string' && !metadataReceived) {
-            // The first message should be the metadata
-            fileMetadata = JSON.parse(event.data);
-            metadataReceived = true;
-            fileSize = fileMetadata.size;
-            console.log(`Expecting file: ${fileMetadata.name} with size: ${fileMetadata.size}`);
+            if(!metadataReceived) {
+                fileMetadata = JSON.parse(event.data);
+                metadataReceived = true;
+                fileSize = fileMetadata.size;
+                receivedSize = 0; // Reset receivedSize for new file
+                receivedBuffers = []; // Reset receivedBuffers for new file
+                console.log(`Expecting file: ${fileMetadata.name} with size: ${fileMetadata.size}`);
+            }
         } else {
             // Here we receive the file data
             receivedBuffers.push(event.data);
@@ -180,11 +183,9 @@ function setupDataChannelEvents(dataChannel) {
                 downloadBlob(blob, fileMetadata.name);
                 // Reset for the next file transfer
                 console.log("File transfer completed: " + fileMetadata.name);
-                receivedBuffers = [];
-                fileSize = 0;
-                receivedSize = 0;
+
                 metadataReceived = false;
-                fileMetadata = null;
+
             }
         }
     };
@@ -228,6 +229,8 @@ function processMessageQueue(dataChannel) {
         const message = messageQueue.shift(); // Remove the first message from the queue
         dataChannel.send(message);
     }
+    // Clear the queue after processing
+    messageQueue = [];
 }
 
 function downloadBlob(blob, fileName) {
