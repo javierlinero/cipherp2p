@@ -7,7 +7,7 @@
     <img src="images/logo.png" alt="Logo" width="150" height="150">
   </a>
   <h2 align="center">Cipher P2P</h3>
-  <h3 align="center">Peer2Peer File Sharing Chrome Extension w/ Multiple Users</h3>
+  <h3 align="center">Peer2Peer File Sharing Chrome Extension</h3>
 </div>
 
 ## Objective
