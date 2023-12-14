@@ -213,7 +213,7 @@ function sendFileMetadata(dataChannel, file) {
 
   function sendDataChannelMessage(dataChannel, message) {
     if (dataChannel.readyState === 'open') {
-        if (dataChannel.bufferedAmount > 16 * 1024 * 1024) { // Check if buffered amount is greater than a threshold, e.g., 16 MB
+        if (dataChannel.bufferedAmount > 1 * 1024 * 1024) { // Check if buffered amount is greater than a threshold, e.g., 16 MB
             setTimeout(() => sendDataChannelMessage(dataChannel, message), 200); // Wait for 200 ms before trying to send again
         } else {
             dataChannel.send(message);
