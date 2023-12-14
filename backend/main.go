@@ -146,6 +146,7 @@ func JoinSessionRequestHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	sessionHost := r.URL.Query().Get("host")
+	print(sessionHost)
 	if sessionHost == "" {
 		log.Println("Host is missing")
 		return
