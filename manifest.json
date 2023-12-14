@@ -12,10 +12,10 @@
       "https://damp-brushlands-64193-d1cbfc7ae5d4.herokuapp.com/*"
     ],
     "background": {
-      "service_worker": "background.js"
+      "service_worker": "frontend/scripts/background.js"
     },
     "action": {
-      "default_popup": "index.html",
+      "default_popup": "frontend/index.html",
       "default_icon": {
         "16": "images/icon16.png",
         "48": "images/icon48.png",
@@ -30,7 +30,7 @@
     "content_scripts": [
       {
         "matches": ["<all_urls>"],
-        "js": ["content.js"]
+        "js": ["frontend/scripts/content.js"]
       }
     ],
     "content_security_policy": {
