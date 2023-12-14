@@ -368,7 +368,8 @@ func GetAPIKeyHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Content-Type", "application/json")
 	apiKey := os.Getenv("TURN_API_KEY")
-	json.NewEncoder(w).Encode(apiKey)
+	response := map[string]string{"apiKey": apiKey}
+	json.NewEncoder(w).Encode(response)
 }
 
 type SignalMessage struct {

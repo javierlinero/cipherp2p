@@ -280,8 +280,10 @@ function createPeerConnection(sessionID, isInitiator, host, otherUserId, toUserI
     var peerConfiguration = {};
 
     (async() => {
-        const API = await fetch("https://damp-brushlands-64193-d1cbfc7ae5d4.herokuapp.com/get-api-key")    
-        const response = await fetch("https://cipherp2p.metered.live/api/v1/turn/credentials?apiKey=" + JSON.parse(API));
+        const APIResponse = await fetch("https://damp-brushlands-64193-d1cbfc7ae5d4.herokuapp.com/get-api-key");
+        const data = await APIResponse.json();
+        const apiKey = data.apiKey;
+        const response = await fetch(```https://cipherp2p.metered.live/api/v1/turn/credentials?apiKey=${apiKey}```);
         const iceServers = await response.json();
         peerConfiguration.iceServers = iceServers
     })();
