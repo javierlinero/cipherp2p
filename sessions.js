@@ -87,33 +87,23 @@ function sendFilesToCheckedUsers() {
     // Grab all the checkboxes that are checked
     const checkboxes = document.querySelectorAll('input[name="userCheckbox"]:checked');
 
-    let filesSent = 0;
     // Call the sendFileToUser function for each checked user
     checkboxes.forEach(checkbox => {
         const userId = checkbox.value;
         console.log('Sending file to user:', userId);
-        sendFileToUser(file, userId, () => {
-            filesSent++;
-            if (filesSent === checkboxes.length) {
-                resetFileInputUI();
-            }
-        });
+        sendFileToUser(file, userId);
     });
+
+    resetFileInputUI();
 }
 
-function sendFileToUser(file, userId, callback) {
+function sendFileToUser(file, userId) {
     console.log("sendFiletoUser: Selected file:", file.name, "Type:", file.type, "Size:", file.size);
     const dataChannel = localDataChannels[userId];
     if (dataChannel && dataChannel.readyState === 'open') {
         sendFileDataToUser(dataChannel, file);
     } else {
         console.error('Data channel not open or not found for user:', userId);
-    }
-
-    if (currentOffset >= file.size) {
-        if(typeof callback === 'function') {
-            callback;
-        }
     }
 }
 
