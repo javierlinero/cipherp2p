@@ -11,6 +11,7 @@
 </div>
 
 ## Objective
+Cipher P2P is an innovative Google Chrome extension designed for efficient peer-to-peer file sharing directly from the web browser. Leveraging WebRTC technology, it facilitates fast and secure file transfers among multiple users without the need for intermediary server storage. This tool combines ease of use with advanced technology, offering a user-friendly interface for seamless file sharing and data transfer.
 
 ### Installation
 #### Client Setup:
