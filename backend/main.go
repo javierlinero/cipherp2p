@@ -146,6 +146,14 @@ func JoinSessionRequestHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if len(Sessions.GetUsers(sessionID)) == 2 {
+		var msg = SignalMessage{
+			Type: "full",
+		}
+		wss.WriteJSON(msg)
+		return
+	}
+
 	userID := uuid.New().String()[:8]
 	Sessions.AddUser(sessionID, false, wss, userID)
 

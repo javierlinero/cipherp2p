@@ -83,3 +83,50 @@ body {
     align-items: center;
     gap: 10px; /* Adds space between items */
 }
+
+#loader {
+    width: 75%;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    gap: 10%;
+    position: relative;
+    margin-top: 20px; /* Adjust as needed */
+    display: none;
+}
+
+#text {
+    font-family: var(--font-fam);
+    color: var(--text-color);
+    font-size: 20px;
+    padding: 0 10px;
+    font-weight: 500;
+}
+
+#percent {
+    font-family: var(--font-fam);
+    color: var(--text-color);
+    transition: var(--transition-effect);
+    font-size: 16px;
+    padding: 0 10px;
+    font-weight: 500;
+}
+
+#bar {
+    position: absolute;
+    height: 40px;
+    width: 100%;
+    z-index: -1;
+    border-top: 4px solid var(--bar-color);
+    transform-origin: left;
+    transform: scaleX(0%);
+    transition: var(--transition-effect);
+}
+
+:root {
+    --font-fam: "Satoshi", sans-serif;
+    --text-color: #212529;
+    --bar-color: #ff4d6d;
+    --transition-effect: all 90ms linear;
+}
+

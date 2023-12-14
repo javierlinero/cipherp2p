@@ -120,6 +120,7 @@ function resetFileInputUI() {
 }
 
 function sendFileDataToUser(dataChannel, file) {
+    showProgressBar();
     sendFileMetadata(dataChannel, file); // Send the file metadata first
 
     dataChannel.bufferedAmountLowThreshold = 1024 * 1024; // Set low threshold to 1MB
@@ -142,6 +143,7 @@ function sendFileDataToUser(dataChannel, file) {
                 }
                 // Otherwise, wait for the bufferedAmountLow event
             }
+            updateProgressBar(file.size, currentOffset);
         };
 
         reader.onerror = (error) => {
@@ -157,9 +159,36 @@ function sendFileDataToUser(dataChannel, file) {
         if (currentOffset < file.size) {
             readSlice(); // Send next slice
         }
+        updateProgressBar(file.size, currentOffset);
     };
 }
 
+function showProgressBar() {
+    const loader = document.getElementById('loader');
+    loader.style.display = 'flex'; // Show the progress bar
+}
+
+function hideProgressBar() {
+    const loader = document.getElementById('loader');
+    loader.style.display = 'none'; // Hide the progress bar
+}
+
+function updateProgressBar(totalSize, transferredSize) {
+    const percentComplete = Math.round((transferredSize / totalSize) * 100);
+    const bar = document.getElementById('bar');
+    const loader = document.getElementById('percent');
+    const text = document.getElementById('text');
+
+    loader.textContent = percentComplete + "%";
+    bar.style.transform = `scaleX(${percentComplete / 100})`;
+
+    if (percentComplete < 100) {
+        text.textContent = "Transferring...";
+    } else {
+        text.textContent = "Transfer Complete";
+        setTimeout(hideProgressBar, 2000);
+    }
+}
 
 // Modify your setupDataChannelEvents to handle receiving file data
 function setupDataChannelEvents(dataChannel) {
@@ -435,6 +464,9 @@ function establishWebSocketConnection(sessionID, host) {
                     break;
                 case 'candidate':
                     handleReceivedCandidate(data.Candidate, data.From);
+                    break;
+                case 'full':
+                    window.location.href = 'full.html';
                     break;
             }
         }
