@@ -1,1 +1,0 @@
-// Background script for the Chrome extension

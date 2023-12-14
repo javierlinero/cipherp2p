@@ -15,7 +15,7 @@
       "service_worker": "background.js"
     },
     "action": {
-      "default_popup": "index.html",
+      "default_popup": "frontend/index.html",
       "default_icon": {
         "16": "images/icon16.png",
         "48": "images/icon48.png",
@@ -30,7 +30,7 @@
     "content_scripts": [
       {
         "matches": ["<all_urls>"],
-        "js": ["content.js"]
+        "js": ["frontend/scripts/content.js"]
       }
     ],
     "content_security_policy": {
