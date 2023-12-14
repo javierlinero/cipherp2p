@@ -179,6 +179,7 @@ function setupDataChannelEvents(dataChannel) {
                 const blob = new Blob(receivedBuffers, { type: fileMetadata.type });
                 downloadBlob(blob, fileMetadata.name);
                 // Reset for the next file transfer
+                console.log("File transfer completed: " + fileMetadata.name);
                 receivedBuffers = [];
                 fileSize = 0;
                 receivedSize = 0;
