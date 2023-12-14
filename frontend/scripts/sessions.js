@@ -120,17 +120,14 @@ function resetFileInputUI() {
 }
 
 function sendFileDataToUser(dataChannel, file) {
-    let transferStartTime = Date.now();
     showProgressBar();
     sendFileMetadata(dataChannel, file); // Send the file metadata first
 
-    dataChannel.bufferedAmountLowThreshold = 2 * 1024 * 1024; // Set low threshold to 1MB
+    dataChannel.bufferedAmountLowThreshold =  512 * 1024; // Set low threshold to 1MB
     const chunkSize = 16384; // Define the size of each chunk (e.g., 16 KB)
 
     function readSlice() {
         if (currentOffset >= file.size) {
-            let transferEndTime = Date.now();
-            let transferDuration = transferEndTime - transferStartTime;
             console.log(`File transfer completed in ${transferDuration} ms`);
             console.log("All slices of the file have been read.");
             return; // Exit if we have read the entire file
@@ -201,16 +198,13 @@ function setupDataChannelEvents(dataChannel) {
         processMessageQueue(dataChannel); // Process any queued messages
     };
     dataChannel.onmessage = event => {
-        let downloadStartTime;
         if (typeof event.data === 'string' && !metadataReceived) {
             if(!metadataReceived) {
                 fileMetadata = JSON.parse(event.data);
-                downloadStartTime = Date.now();
                 metadataReceived = true;
                 fileSize = fileMetadata.size;
                 receivedSize = 0; // Reset receivedSize for new file
                 receivedBuffers = []; // Reset receivedBuffers for new file
-                console.log(`Expecting file: ${fileMetadata.name} with size: ${fileMetadata.size}`);
             }
         } else {
             // Here we receive the file data
