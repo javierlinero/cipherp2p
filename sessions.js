@@ -97,10 +97,12 @@ function sendFilesToCheckedUsers() {
     resetFileInputUI();
 }
 
+
 function sendFileToUser(file, userId) {
     console.log("sendFiletoUser: Selected file:", file.name, "Type:", file.type, "Size:", file.size);
     const dataChannel = localDataChannels[userId];
     if (dataChannel && dataChannel.readyState === 'open') {
+        currentOffset = 0; // Reset the offset for new file
         sendFileDataToUser(dataChannel, file);
     } else {
         console.error('Data channel not open or not found for user:', userId);
@@ -124,6 +126,10 @@ function sendFileDataToUser(dataChannel, file) {
     const chunkSize = 16384; // Define the size of each chunk (e.g., 16 KB)
 
     function readSlice() {
+        if (currentOffset >= file.size) {
+            console.log("All slices of the file have been read.");
+            return; // Exit if we have read the entire file
+        }
         const slice = file.slice(currentOffset, currentOffset + chunkSize);
         const reader = new FileReader();
 
@@ -160,7 +166,7 @@ function setupDataChannelEvents(dataChannel) {
     dataChannel.onopen = () => {
         console.log("Data channel is open");
         processMessageQueue(dataChannel); // Process any queued messages
-      };
+    };
     dataChannel.onmessage = event => {
         if (typeof event.data === 'string' && !metadataReceived) {
             if(!metadataReceived) {
