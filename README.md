@@ -35,6 +35,7 @@ Now click on `Load unpacked` and make sure to upload the `cipherp2p` repository 
 #### Local Backend Setup:
 
 If you're interested in setting up your own local hosted signalling server make sure to set a designated environment variable named `PORT`, with a proper designated port. 
+Likewise you need to setup a `TURN_API_KEY` for the TURN server and we recommend using metered!
 
 Then, make sure all the dependencies are correct using `go mod tidy`, and then you can run your own local server by 
 
@@ -43,7 +44,7 @@ cd /path/to/cipherp2p/backend
 go run main.go
 ```
 
-Otherwise you're more than welcome to use the deployed `Heroku` server to use this chrome extension with friends!
+Otherwise you're more than welcome to use the deployed `Heroku` & `Metered` servers to use this chrome extension with friends!
 
 
 ### Built With
