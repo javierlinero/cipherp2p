@@ -87,15 +87,21 @@ function sendFilesToCheckedUsers() {
     // Grab all the checkboxes that are checked
     const checkboxes = document.querySelectorAll('input[name="userCheckbox"]:checked');
 
+    let filesSent = 0;
     // Call the sendFileToUser function for each checked user
     checkboxes.forEach(checkbox => {
         const userId = checkbox.value;
         console.log('Sending file to user:', userId);
-        sendFileToUser(file, userId);
+        sendFileToUser(file, userId, () => {
+            filesSent++;
+            if (filesSent === checkboxes.length) {
+                resetFileInputUI();
+            }
+        });
     });
 }
 
-function sendFileToUser(file, userId) {
+function sendFileToUser(file, userId, callback) {
     console.log("sendFiletoUser: Selected file:", file.name, "Type:", file.type, "Size:", file.size);
     const dataChannel = localDataChannels[userId];
     if (dataChannel && dataChannel.readyState === 'open') {
@@ -103,7 +109,24 @@ function sendFileToUser(file, userId) {
     } else {
         console.error('Data channel not open or not found for user:', userId);
     }
+
+    if (currentOffset >= file.size) {
+        if(typeof callback === 'function') {
+            callback();
+        }
+    }
 }
+
+function resetFileInputUI() {
+    const fileInput = document.getElementById('fileInput');
+    fileInput.value = '';
+
+    const fileNameDisplay = document.getElementById('fileNameDisplay');
+    const sendFileButton = document.getElementById('sendFileButton');
+    fileNameDisplay.textContent = '';
+    sendFileButton.disabled = true;
+}
+
 function sendFileDataToUser(dataChannel, file) {
     sendFileMetadata(dataChannel, file); // Send the file metadata first
 
