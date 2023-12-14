@@ -201,8 +201,8 @@ function setupDataChannelEvents(dataChannel) {
         processMessageQueue(dataChannel); // Process any queued messages
     };
     dataChannel.onmessage = event => {
+        let downloadStartTime;
         if (typeof event.data === 'string' && !metadataReceived) {
-            let downloadStartTime;
             if(!metadataReceived) {
                 fileMetadata = JSON.parse(event.data);
                 downloadStartTime = Date.now();
