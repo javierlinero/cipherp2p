@@ -287,7 +287,7 @@ let fileMetadata = null;
 let peerConnections = {}; // store multiple peer connections
 let currentOffset = 0;
 const localDataChannels = {};
-const MAX_FILE_SIZE = 25 * 1024 * 1024; //25 MB
+const MAX_FILE_SIZE = 200 * 1024 * 1024; //25 MB
 var loggedInUser = null;
 var websocket
 var sentOffer = false;
