@@ -120,6 +120,7 @@ function resetFileInputUI() {
 }
 
 function sendFileDataToUser(dataChannel, file) {
+    let transferStartTime = Date.now();
     showProgressBar();
     sendFileMetadata(dataChannel, file); // Send the file metadata first
 
@@ -128,6 +129,9 @@ function sendFileDataToUser(dataChannel, file) {
 
     function readSlice() {
         if (currentOffset >= file.size) {
+            let transferEndTime = Date.now();
+            let transferDuration = transferEndTime - transferStartTime;
+            console.log(`File transfer completed in ${transferDuration} ms`);
             console.log("All slices of the file have been read.");
             return; // Exit if we have read the entire file
         }
@@ -197,9 +201,11 @@ function setupDataChannelEvents(dataChannel) {
         processMessageQueue(dataChannel); // Process any queued messages
     };
     dataChannel.onmessage = event => {
+        let downloadStartTime;
         if (typeof event.data === 'string' && !metadataReceived) {
             if(!metadataReceived) {
                 fileMetadata = JSON.parse(event.data);
+                downloadStartTime = Date.now();
                 metadataReceived = true;
                 fileSize = fileMetadata.size;
                 receivedSize = 0; // Reset receivedSize for new file
@@ -217,8 +223,10 @@ function setupDataChannelEvents(dataChannel) {
                 const blob = new Blob(receivedBuffers, { type: fileMetadata.type });
                 downloadBlob(blob, fileMetadata.name);
                 // Reset for the next file transfer
+                let downloadEndTime = Date.now();
+                let downloadDuration = downloadEndTime - downloadStartTime;
                 console.log("File transfer completed: " + fileMetadata.name);
-
+                console.log(`File download completed in ${downloadDuration} ms`);
                 metadataReceived = false;
 
             }
@@ -287,7 +295,7 @@ let fileMetadata = null;
 let peerConnections = {}; // store multiple peer connections
 let currentOffset = 0;
 const localDataChannels = {};
-const MAX_FILE_SIZE = 25 * 1024 * 1024; //25 MB
+const MAX_FILE_SIZE = 200 * 1024 * 1024; //25 MB
 var loggedInUser = null;
 var websocket
 var sentOffer = false;
