@@ -123,7 +123,7 @@ function sendFileDataToUser(dataChannel, file) {
     showProgressBar();
     sendFileMetadata(dataChannel, file); // Send the file metadata first
 
-    dataChannel.bufferedAmountLowThreshold =  512 * 1024; // Set low threshold to 1MB
+    dataChannel.bufferedAmountLowThreshold =  2 * 1024 * 1024; // Set low threshold to 1MB
     const chunkSize = 16384; // Define the size of each chunk (e.g., 16 KB)
 
     function readSlice() {
@@ -217,8 +217,6 @@ function setupDataChannelEvents(dataChannel) {
                 const blob = new Blob(receivedBuffers, { type: fileMetadata.type });
                 downloadBlob(blob, fileMetadata.name);
                 // Reset for the next file transfer
-                let downloadEndTime = Date.now();
-                let downloadDuration = downloadEndTime - downloadStartTime;
                 console.log("File transfer completed: " + fileMetadata.name);
                 console.log(`File download completed in ${downloadDuration} ms`);
                 metadataReceived = false;
