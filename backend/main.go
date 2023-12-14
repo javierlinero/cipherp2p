@@ -137,36 +137,20 @@ func JoinSessionRequestHandler(w http.ResponseWriter, r *http.Request) {
 		log.Printf("error upgrading connection: %v", err)
 		return
 	}
-
-	defer wss.Close()
+	go keepAlive(wss, 30*time.Second)
 
 	sessionID := r.URL.Query().Get("sessionID")
 	if sessionID == "" {
 		log.Println("Session ID is missing")
+		wss.Close()
 		return
-	}
-	sessionHost := r.URL.Query().Get("host")
-	print(sessionHost)
-	if sessionHost == "" {
-		log.Println("Host is missing")
-		return
-	}
-
-	sizeofSession := len(Sessions.GetUsers(sessionID))
-	if sizeofSession >= 2 {
-		log.Println("Session is full")
-		wss.WriteMessage(websocket.TextMessage, []byte("Session is full"))
-		return
-	} else if sizeofSession == 0 && sessionHost != "true" {
-		log.Println("Session does not exist")
-		wss.WriteMessage(websocket.TextMessage, []byte("Session does not exist"))
 	}
 
 	userID := uuid.New().String()[:8]
 	Sessions.AddUser(sessionID, false, wss, userID)
-	go keepAlive(wss, 30*time.Second)
 
 	go func() {
+		defer wss.Close()
 		for {
 			var msg SignalMessage
 			err := wss.ReadJSON(&msg)

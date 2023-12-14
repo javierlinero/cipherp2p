@@ -387,29 +387,15 @@ async function handleReceivedCandidate(candidate, fromUserId) {
 
 
 function establishWebSocketConnection(sessionID, host) {
-    websocket = new WebSocket(`wss://damp-brushlands-64193-d1cbfc7ae5d4.herokuapp.com/join-room?sessionID=${sessionID}&host=${host}`);
+    websocket = new WebSocket(`wss://damp-brushlands-64193-d1cbfc7ae5d4.herokuapp.com/join-room?sessionID=${sessionID}`);
 
     websocket.onopen = function() {
         websocket.send(JSON.stringify({ Type: 'joinSession', SessionID: sessionID, Host: host, SDP: null, Candidate: null, To: null, From: null }));
     }
 
     websocket.onmessage = function(event) {
-        let data;
-        try {
-            data = JSON.parse(event.data)
-        } catch (error) {
-            data = event.data;
-        }
-
-        if (typeof data === 'string') {
-            if (data === "Session is full") {
-                console.log("Cannot join: The session is full.");
-                window.location.href = 'full.html'
-            } else if (data === "Session does not exist") {
-                console.log("Cannot join: The session does not exist.");
-                window.location.href = 'dne.html'
-            }
-        } else if (typeof data === 'object' && Object.keys(data).length === 2) {
+        const data = JSON.parse(event.data)
+        if (typeof data === 'object' && Object.keys(data).length === 2) {
             if (loggedInUser === null) {
                 loggedInUser = data.UserID;
             }
