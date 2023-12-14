@@ -6,6 +6,7 @@ import (
 	"math/rand"
 	"net/http"
 	"os"
+	"strconv"
 	"sync"
 	"time"
 
@@ -146,9 +147,22 @@ func JoinSessionRequestHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	isHost, err := strconv.ParseBool(r.URL.Query().Get("isHost"))
+	if err != nil {
+		isHost = false
+	}
+
 	if len(Sessions.GetUsers(sessionID)) == 2 {
 		var msg = SignalMessage{
 			Type: "full",
+		}
+		wss.WriteJSON(msg)
+		return
+	}
+
+	if len(Sessions.GetUsers(sessionID)) == 0 && !isHost {
+		var msg = SignalMessage{
+			Type: "dne",
 		}
 		wss.WriteJSON(msg)
 		return

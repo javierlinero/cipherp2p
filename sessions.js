@@ -441,7 +441,7 @@ async function handleReceivedCandidate(candidate, fromUserId) {
 
 
 function establishWebSocketConnection(sessionID, host) {
-    websocket = new WebSocket(`wss://damp-brushlands-64193-d1cbfc7ae5d4.herokuapp.com/join-room?sessionID=${sessionID}`);
+    websocket = new WebSocket(`wss://damp-brushlands-64193-d1cbfc7ae5d4.herokuapp.com/join-room?sessionID=${sessionID}&host=${host}`);
 
     websocket.onopen = function() {
         websocket.send(JSON.stringify({ Type: 'joinSession', SessionID: sessionID, Host: host, SDP: null, Candidate: null, To: null, From: null }));
@@ -468,6 +468,10 @@ function establishWebSocketConnection(sessionID, host) {
                 case 'full':
                     window.location.href = 'full.html';
                     break;
+                case 'dne':
+                    window.location.href = 'dne.html';
+                    break;
+                default:
             }
         }
     }
