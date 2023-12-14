@@ -123,7 +123,7 @@ function sendFileDataToUser(dataChannel, file) {
     showProgressBar();
     sendFileMetadata(dataChannel, file); // Send the file metadata first
 
-    dataChannel.bufferedAmountLowThreshold =  2 * 1024 * 1024; // Set low threshold to 1MB
+    dataChannel.bufferedAmountLowThreshold =  1 * 1024 * 1024; // Set low threshold to 1MB
     const chunkSize = 16384; // Define the size of each chunk (e.g., 16 KB)
 
     function readSlice() {
@@ -287,7 +287,7 @@ let fileMetadata = null;
 let peerConnections = {}; // store multiple peer connections
 let currentOffset = 0;
 const localDataChannels = {};
-const MAX_FILE_SIZE = 200 * 1024 * 1024; //25 MB
+const MAX_FILE_SIZE = 25 * 1024 * 1024; //25 MB
 var loggedInUser = null;
 var websocket
 var sentOffer = false;
