@@ -147,7 +147,7 @@ func JoinSessionRequestHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	isHost, err := strconv.ParseBool(r.URL.Query().Get("isHost"))
+	isHost, err := strconv.ParseBool(r.URL.Query().Get("host"))
 	if err != nil {
 		isHost = false
 	}
