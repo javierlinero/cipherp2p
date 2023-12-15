@@ -128,7 +128,6 @@ function sendFileDataToUser(dataChannel, file) {
 
     function readSlice() {
         if (currentOffset >= file.size) {
-            console.log(`File transfer completed in ${transferDuration} ms`);
             console.log("All slices of the file have been read.");
             return; // Exit if we have read the entire file
         }
@@ -218,7 +217,6 @@ function setupDataChannelEvents(dataChannel) {
                 downloadBlob(blob, fileMetadata.name);
                 // Reset for the next file transfer
                 console.log("File transfer completed: " + fileMetadata.name);
-                console.log(`File download completed in ${downloadDuration} ms`);
                 metadataReceived = false;
 
             }
